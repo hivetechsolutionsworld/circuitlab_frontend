@@ -12,6 +12,7 @@ import {
   Zap,
   Sparkles,
   Plus,
+  X,
 } from 'lucide-react';
 import { useEditorStore } from '../../stores/editorStore';
 import { ComponentType, COMPONENT_METADATA } from '@circuitlab/shared';
@@ -31,6 +32,8 @@ export const ComponentSidebar: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const addComponent = useEditorStore((s) => s.addComponent);
   const isReadOnly = useEditorStore((s) => s.isReadOnly);
+  const isSidebarOpen = useEditorStore((s) => s.isSidebarOpen);
+  const setSidebarOpen = useEditorStore((s) => s.setSidebarOpen);
 
   const componentList = Object.entries(COMPONENT_METADATA).map(([type, meta]) => ({
     type: type as ComponentType,
@@ -62,6 +65,15 @@ export const ComponentSidebar: React.FC = () => {
         return <Grid className="h-4 w-4 text-cyan-400" />;
       default:
         return <Zap className="h-4 w-4 text-blue-400" />;
+    }
+  };
+
+  const handleAddComponent = (type: ComponentType) => {
+    if (isReadOnly) return;
+    addComponent(type);
+    // On small screens, close the sidebar after adding so user can see the 3D canvas
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setSidebarOpen(false);
     }
   };
 
@@ -236,25 +248,44 @@ export const ComponentSidebar: React.FC = () => {
       title: 'Sample Project Loaded',
       message: 'ESP32 Smart Home LED Controller is ready to simulate.',
     });
+    if (typeof window !== 'undefined' && window.innerWidth < 1024) {
+      setSidebarOpen(false);
+    }
   };
 
   return (
-    <aside className="flex flex-col w-64 h-[calc(100vh-3.5rem)] border-r border-panel-border bg-panel-bg z-10 select-none">
+    <aside
+      className={`fixed inset-y-0 left-0 z-40 flex flex-col w-72 sm:w-80 max-w-[85vw] h-full border-r border-panel-border bg-panel-bg shadow-2xl transition-transform duration-300 ease-in-out select-none lg:static lg:w-64 lg:max-w-none lg:shadow-none ${
+        isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:hidden'
+      }`}
+    >
       {/* Sidebar Header */}
       <div className="p-3 border-b border-panel-border space-y-2">
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold uppercase tracking-wider text-gray-400">
             Components
           </span>
-          <button
-            onClick={handleLoadSample}
-            disabled={isReadOnly}
-            className="flex items-center space-x-1 text-[11px] font-medium text-blue-400 hover:text-blue-300 disabled:opacity-30 transition"
-            title="Load ESP32 Smart Home sample project"
-          >
-            <Sparkles className="h-3 w-3" />
-            <span>Load Sample</span>
-          </button>
+          <div className="flex items-center space-x-1 sm:space-x-2">
+            <button
+              onClick={handleLoadSample}
+              disabled={isReadOnly}
+              className="flex items-center space-x-1 text-[11px] font-medium text-blue-400 hover:text-blue-300 disabled:opacity-30 transition"
+              title="Load ESP32 Smart Home sample project"
+            >
+              <Sparkles className="h-3 w-3" />
+              <span>Sample</span>
+            </button>
+
+            {/* Close Button for Mobile / Tablet */}
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden rounded p-1 text-gray-400 hover:text-white hover:bg-panel-hover transition"
+              title="Close Components"
+              aria-label="Close Components"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         {/* Search Input */}
@@ -293,7 +324,7 @@ export const ComponentSidebar: React.FC = () => {
           <div
             key={c.type}
             className="group rounded-lg border border-panel-border bg-panel-header p-2.5 hover:border-blue-500/50 hover:bg-panel-hover transition cursor-pointer"
-            onClick={() => !isReadOnly && addComponent(c.type)}
+            onClick={() => handleAddComponent(c.type)}
           >
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-2">

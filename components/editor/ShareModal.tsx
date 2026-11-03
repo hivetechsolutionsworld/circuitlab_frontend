@@ -40,8 +40,8 @@ export const ShareModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm select-none">
-      <div className="w-full max-w-md rounded-xl border border-panel-border bg-panel-bg p-5 shadow-2xl space-y-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-3 sm:p-4 select-none">
+      <div className="w-full max-w-md rounded-xl border border-panel-border bg-panel-bg p-4 sm:p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between border-b border-panel-border pb-3">
           <div className="flex items-center space-x-2 text-blue-400">
             <Share2 className="h-5 w-5" />

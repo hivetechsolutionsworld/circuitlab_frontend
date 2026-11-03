@@ -83,4 +83,31 @@ describe('Editor Store State & Actions', () => {
     // Wire should be safely removed!
     expect(updated.wires).toHaveLength(0);
   });
+
+  it('manages responsive sidebar and properties drawer state', () => {
+    const store = useEditorStore.getState();
+
+    expect(store.isSidebarOpen).toBe(false);
+    expect(store.isPropertiesOpen).toBe(false);
+
+    store.toggleSidebar();
+    expect(useEditorStore.getState().isSidebarOpen).toBe(true);
+
+    store.toggleSidebar(false);
+    expect(useEditorStore.getState().isSidebarOpen).toBe(false);
+
+    store.toggleProperties();
+    expect(useEditorStore.getState().isPropertiesOpen).toBe(true);
+
+    // Selecting a component should auto-open properties drawer
+    store.addComponent('led');
+    const ledId = useEditorStore.getState().project.components[0].id;
+
+    store.setPropertiesOpen(false);
+    expect(useEditorStore.getState().isPropertiesOpen).toBe(false);
+
+    store.selectComponent(ledId);
+    expect(useEditorStore.getState().isPropertiesOpen).toBe(true);
+    expect(useEditorStore.getState().selectedComponentId).toBe(ledId);
+  });
 });

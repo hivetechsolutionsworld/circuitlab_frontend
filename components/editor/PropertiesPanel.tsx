@@ -13,6 +13,7 @@ import {
   Cable,
   CheckCircle2,
   XCircle,
+  X,
 } from 'lucide-react';
 import { useEditorStore } from '../../stores/editorStore';
 import { COMPONENT_METADATA } from '@circuitlab/shared';
@@ -23,6 +24,9 @@ export const PropertiesPanel: React.FC = () => {
   const components = useEditorStore((s) => s.project.components);
   const wires = useEditorStore((s) => s.project.wires);
   const isReadOnly = useEditorStore((s) => s.isReadOnly);
+
+  const isPropertiesOpen = useEditorStore((s) => s.isPropertiesOpen);
+  const setPropertiesOpen = useEditorStore((s) => s.setPropertiesOpen);
 
   const updatePosition = useEditorStore((s) => s.updateComponentPosition);
   const rotateComponent = useEditorStore((s) => s.rotateComponent);
@@ -44,7 +48,11 @@ export const PropertiesPanel: React.FC = () => {
     const toComp = components.find((c) => c.id === selectedWire.to.componentId);
 
     return (
-      <aside className="flex flex-col w-72 h-[calc(100vh-3.5rem)] border-l border-panel-border bg-panel-bg z-10 select-none overflow-y-auto">
+      <aside
+        className={`fixed inset-y-0 right-0 z-40 flex flex-col w-72 sm:w-80 max-w-[85vw] h-full border-l border-panel-border bg-panel-bg shadow-2xl transition-transform duration-300 ease-in-out select-none overflow-y-auto lg:static lg:w-72 lg:max-w-none lg:shadow-none ${
+          isPropertiesOpen ? 'translate-x-0' : 'translate-x-full lg:hidden'
+        }`}
+      >
         <div className="p-3 border-b border-panel-border flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Cable className="h-4 w-4 text-blue-400" />
@@ -52,14 +60,24 @@ export const PropertiesPanel: React.FC = () => {
               Wire Properties
             </h3>
           </div>
-          <button
-            onClick={() => deleteWire(selectedWire.id)}
-            disabled={isReadOnly}
-            className="rounded p-1 text-red-400 hover:text-red-300 hover:bg-red-950/40 disabled:opacity-30 transition"
-            title="Delete Wire"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
+          <div className="flex items-center space-x-1">
+            <button
+              onClick={() => deleteWire(selectedWire.id)}
+              disabled={isReadOnly}
+              className="rounded p-1 text-red-400 hover:text-red-300 hover:bg-red-950/40 disabled:opacity-30 transition"
+              title="Delete Wire"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setPropertiesOpen(false)}
+              className="lg:hidden rounded p-1 text-gray-400 hover:text-white hover:bg-panel-hover transition"
+              title="Close Inspector"
+              aria-label="Close Inspector"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
         </div>
 
         <div className="p-3 space-y-4 text-xs">
@@ -110,7 +128,11 @@ export const PropertiesPanel: React.FC = () => {
     const compSim = simStates[selectedComp.id];
 
     return (
-      <aside className="flex flex-col w-72 h-[calc(100vh-3.5rem)] border-l border-panel-border bg-panel-bg z-10 select-none overflow-y-auto">
+      <aside
+        className={`fixed inset-y-0 right-0 z-40 flex flex-col w-72 sm:w-80 max-w-[85vw] h-full border-l border-panel-border bg-panel-bg shadow-2xl transition-transform duration-300 ease-in-out select-none overflow-y-auto lg:static lg:w-72 lg:max-w-none lg:shadow-none ${
+          isPropertiesOpen ? 'translate-x-0' : 'translate-x-full lg:hidden'
+        }`}
+      >
         {/* Panel Header */}
         <div className="p-3 border-b border-panel-border flex items-center justify-between">
           <div>
@@ -136,6 +158,14 @@ export const PropertiesPanel: React.FC = () => {
               title="Delete Component"
             >
               <Trash2 className="h-4 w-4" />
+            </button>
+            <button
+              onClick={() => setPropertiesOpen(false)}
+              className="lg:hidden rounded p-1 text-gray-400 hover:text-white hover:bg-panel-hover transition"
+              title="Close Inspector"
+              aria-label="Close Inspector"
+            >
+              <X className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -375,13 +405,25 @@ export const PropertiesPanel: React.FC = () => {
 
   // Default empty state when nothing selected
   return (
-    <aside className="flex flex-col w-72 h-[calc(100vh-3.5rem)] border-l border-panel-border bg-panel-bg z-10 select-none p-4 text-xs text-gray-400 space-y-4">
-      <div className="space-y-1">
+    <aside
+      className={`fixed inset-y-0 right-0 z-40 flex flex-col w-72 sm:w-80 max-w-[85vw] h-full border-l border-panel-border bg-panel-bg shadow-2xl transition-transform duration-300 ease-in-out select-none p-4 text-xs text-gray-400 space-y-4 overflow-y-auto lg:static lg:w-72 lg:max-w-none lg:shadow-none ${
+        isPropertiesOpen ? 'translate-x-0' : 'translate-x-full lg:hidden'
+      }`}
+    >
+      <div className="flex items-center justify-between">
         <h3 className="font-semibold text-gray-200">Circuit Workspace</h3>
-        <p className="text-[11px] text-gray-500">
-          Select any component or wire to inspect and edit its properties.
-        </p>
+        <button
+          onClick={() => setPropertiesOpen(false)}
+          className="lg:hidden rounded p-1 text-gray-400 hover:text-white hover:bg-panel-hover transition"
+          title="Close Inspector"
+          aria-label="Close Inspector"
+        >
+          <X className="h-4 w-4" />
+        </button>
       </div>
+      <p className="text-[11px] text-gray-500">
+        Select any component or wire to inspect and edit its properties.
+      </p>
 
       <div className="rounded-lg bg-panel-header p-3 border border-panel-border space-y-2">
         <h4 className="font-semibold text-gray-300">Project Overview</h4>

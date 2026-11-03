@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { HeaderToolbar } from './HeaderToolbar';
 import { ComponentSidebar } from './ComponentSidebar';
@@ -11,6 +11,7 @@ import { SettingsModal } from './SettingsModal';
 import { HelpModal } from './HelpModal';
 import { ToastContainer } from './Toast';
 import { useKeybindings } from '../../hooks/useKeybindings';
+import { useEditorStore } from '../../stores/editorStore';
 
 // Dynamically import Three.js Canvas to guarantee pure client-side rendering with no SSR hydration mismatches
 const CircuitCanvas = dynamic(
@@ -28,6 +29,19 @@ const CircuitCanvas = dynamic(
 export const EditorLayout: React.FC = () => {
   useKeybindings();
 
+  const isSidebarOpen = useEditorStore((s) => s.isSidebarOpen);
+  const isPropertiesOpen = useEditorStore((s) => s.isPropertiesOpen);
+  const setSidebarOpen = useEditorStore((s) => s.setSidebarOpen);
+  const setPropertiesOpen = useEditorStore((s) => s.setPropertiesOpen);
+
+  // Initialize desktop panels on mount if screen is desktop width (>= 1024px)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+      setSidebarOpen(true);
+      setPropertiesOpen(true);
+    }
+  }, [setSidebarOpen, setPropertiesOpen]);
+
   return (
     <div className="flex h-screen w-screen flex-col overflow-hidden bg-background text-foreground antialiased select-none">
       {/* Top Header Toolbar */}
@@ -35,12 +49,33 @@ export const EditorLayout: React.FC = () => {
 
       {/* Main Workspace (Sidebar, 3D Canvas, Properties) */}
       <div className="flex flex-1 overflow-hidden relative">
+        {/* Mobile Backdrop for Sidebar */}
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close component sidebar"
+          />
+        )}
+
+        {/* Component Sidebar (Collapsible Drawer on Mobile, Static on Desktop) */}
         <ComponentSidebar />
 
-        <main className="flex-1 h-full relative overflow-hidden">
+        {/* 3D Canvas Area */}
+        <main className="flex-1 h-full relative overflow-hidden touch-none">
           <CircuitCanvas />
         </main>
 
+        {/* Mobile Backdrop for Properties */}
+        {isPropertiesOpen && (
+          <div
+            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity"
+            onClick={() => setPropertiesOpen(false)}
+            aria-label="Close properties panel"
+          />
+        )}
+
+        {/* Properties Panel (Collapsible Drawer on Mobile, Static on Desktop) */}
         <PropertiesPanel />
       </div>
 

@@ -48,8 +48,14 @@ interface EditorState {
   // Modals & UI
   activeModal: 'share' | 'settings' | 'help' | null;
   toasts: ToastItem[];
+  isSidebarOpen: boolean;
+  isPropertiesOpen: boolean;
 
   // Actions
+  toggleSidebar: (force?: boolean) => void;
+  toggleProperties: (force?: boolean) => void;
+  setSidebarOpen: (open: boolean) => void;
+  setPropertiesOpen: (open: boolean) => void;
   setProject: (project: CircuitProject, readOnly?: boolean) => void;
   setProjectName: (name: string) => void;
   addComponent: (type: ComponentType, position?: [number, number, number]) => void;
@@ -130,6 +136,8 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
     activeModal: null,
     toasts: [],
+    isSidebarOpen: false,
+    isPropertiesOpen: false,
 
     setProject: (project, readOnly = false) => {
       history.clear();
@@ -319,7 +327,11 @@ export const useEditorStore = create<EditorState>((set, get) => {
     },
 
     selectComponent: (id) => {
-      set({ selectedComponentId: id, selectedWireId: null });
+      set((state) => ({
+        selectedComponentId: id,
+        selectedWireId: null,
+        isPropertiesOpen: id ? true : state.isPropertiesOpen,
+      }));
     },
 
     startWireDraft: (componentId, pinId) => {
@@ -380,7 +392,11 @@ export const useEditorStore = create<EditorState>((set, get) => {
     },
 
     selectWire: (id) => {
-      set({ selectedWireId: id, selectedComponentId: null });
+      set((state) => ({
+        selectedWireId: id,
+        selectedComponentId: null,
+        isPropertiesOpen: id ? true : state.isPropertiesOpen,
+      }));
     },
 
     deleteWire: (id) => {
@@ -544,6 +560,20 @@ export const useEditorStore = create<EditorState>((set, get) => {
         get().runValidation();
       }
     },
+
+    toggleSidebar: (force) =>
+      set((state) => ({
+        isSidebarOpen: force !== undefined ? force : !state.isSidebarOpen,
+      })),
+
+    toggleProperties: (force) =>
+      set((state) => ({
+        isPropertiesOpen: force !== undefined ? force : !state.isPropertiesOpen,
+      })),
+
+    setSidebarOpen: (open) => set({ isSidebarOpen: open }),
+
+    setPropertiesOpen: (open) => set({ isPropertiesOpen: open }),
 
     openModal: (modal) => set({ activeModal: modal }),
 
