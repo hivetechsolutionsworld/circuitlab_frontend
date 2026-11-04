@@ -31,7 +31,7 @@ export const GridPlane: React.FC = () => {
   return (
     <group position={[0, -0.01, 0]}>
       {/* Visual Engineering Grid */}
-      <gridHelper args={[40, 80, '#334155', '#1e293b']} />
+      <gridHelper args={[40, 80, '#3b82f6', '#1a2234']} />
 
       {/* Invisible plane to intercept raycasts on floor */}
       <mesh

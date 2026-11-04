@@ -23,7 +23,7 @@ export const CircuitCanvas: React.FC = () => {
         gl={{ antialias: true, alpha: false }}
         className="h-full w-full"
       >
-        <color attach="background" args={['#0a0c10']} />
+        <color attach="background" args={['#0c101a']} />
         <Scene />
       </Canvas>
 

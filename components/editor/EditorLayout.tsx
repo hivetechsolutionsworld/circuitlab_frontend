@@ -10,6 +10,8 @@ import { ShareModal } from './ShareModal';
 import { SettingsModal } from './SettingsModal';
 import { HelpModal } from './HelpModal';
 import { ProjectsModal } from './ProjectsModal';
+import { CodeEditorView } from './CodeEditorView';
+import { BuildBomView } from './BuildBomView';
 import { ToastContainer } from './Toast';
 import { useKeybindings } from '../../hooks/useKeybindings';
 import { useEditorStore } from '../../stores/editorStore';
@@ -34,6 +36,7 @@ export const EditorLayout: React.FC = () => {
   const isPropertiesOpen = useEditorStore((s) => s.isPropertiesOpen);
   const setSidebarOpen = useEditorStore((s) => s.setSidebarOpen);
   const setPropertiesOpen = useEditorStore((s) => s.setPropertiesOpen);
+  const editorMode = useEditorStore((s) => s.editorMode);
 
   // Initialize desktop panels on mount if screen is desktop width (>= 1024px)
   useEffect(() => {
@@ -48,40 +51,52 @@ export const EditorLayout: React.FC = () => {
       {/* Top Header Toolbar */}
       <HeaderToolbar />
 
-      {/* Main Workspace (Sidebar, 3D Canvas, Properties) */}
-      <div className="flex flex-1 overflow-hidden relative">
-        {/* Mobile Backdrop for Sidebar */}
-        {isSidebarOpen && (
-          <div
-            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity"
-            onClick={() => setSidebarOpen(false)}
-            aria-label="Close component sidebar"
-          />
-        )}
-
-        {/* Component Sidebar (Collapsible Drawer on Mobile, Static on Desktop) */}
-        <ComponentSidebar />
-
-        {/* 3D Canvas Area */}
-        <main className="flex-1 h-full relative overflow-hidden touch-none">
-          <CircuitCanvas />
+      {/* Main Workspace */}
+      {editorMode === 'code' ? (
+        <main className="flex-1 overflow-hidden">
+          <CodeEditorView />
         </main>
+      ) : editorMode === 'build' ? (
+        <main className="flex-1 overflow-hidden">
+          <BuildBomView />
+        </main>
+      ) : (
+        <>
+          <div className="flex flex-1 overflow-hidden relative">
+            {/* Mobile Backdrop for Sidebar */}
+            {isSidebarOpen && (
+              <div
+                className="fixed inset-0 z-30 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity"
+                onClick={() => setSidebarOpen(false)}
+                aria-label="Close component sidebar"
+              />
+            )}
 
-        {/* Mobile Backdrop for Properties */}
-        {isPropertiesOpen && (
-          <div
-            className="fixed inset-0 z-30 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity"
-            onClick={() => setPropertiesOpen(false)}
-            aria-label="Close properties panel"
-          />
-        )}
+            {/* Component Sidebar (Collapsible Drawer on Mobile, Static on Desktop) */}
+            <ComponentSidebar />
 
-        {/* Properties Panel (Collapsible Drawer on Mobile, Static on Desktop) */}
-        <PropertiesPanel />
-      </div>
+            {/* 3D Canvas Area */}
+            <main className="flex-1 h-full relative overflow-hidden touch-none">
+              <CircuitCanvas />
+            </main>
 
-      {/* Bottom Console Panel */}
-      <SimulationConsole />
+            {/* Mobile Backdrop for Properties */}
+            {isPropertiesOpen && (
+              <div
+                className="fixed inset-0 z-30 bg-black/60 backdrop-blur-xs lg:hidden transition-opacity"
+                onClick={() => setPropertiesOpen(false)}
+                aria-label="Close properties panel"
+              />
+            )}
+
+            {/* Properties Panel (Collapsible Drawer on Mobile, Static on Desktop) */}
+            <PropertiesPanel />
+          </div>
+
+          {/* Bottom Console Panel */}
+          <SimulationConsole />
+        </>
+      )}
 
       {/* Overlays, Dialogs & Notifications */}
       <ShareModal />

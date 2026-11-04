@@ -47,6 +47,7 @@ interface EditorState {
   validationResult: CircuitValidationResult | null;
 
   // Modals & UI
+  editorMode: 'design' | 'code' | 'simulate' | 'build';
   activeModal: 'share' | 'settings' | 'help' | 'projects' | null;
   toasts: ToastItem[];
   isSidebarOpen: boolean;
@@ -63,6 +64,7 @@ interface EditorState {
   setIsDraggingComponent: (isDragging: boolean) => void;
   setActiveWireDraftPoint: (pt: [number, number, number] | null) => void;
   setCameraViewPreset: (preset: '3d' | 'top' | 'front') => void;
+  setEditorMode: (mode: 'design' | 'code' | 'simulate' | 'build') => void;
   newProject: () => void;
   loadSampleProject: () => void;
   setProject: (project: CircuitProject, readOnly?: boolean) => void;
@@ -144,6 +146,17 @@ export const useEditorStore = create<EditorState>((set, get) => {
     isDraggingComponent: false,
     activeWireDraftPoint: null,
     cameraViewPreset: '3d',
+    editorMode: 'design',
+
+    setEditorMode: (mode) => {
+      set({ editorMode: mode });
+      if (mode === 'simulate') {
+        const state = get();
+        if (state.simulationStatus !== 'running') {
+          state.startSimulation();
+        }
+      }
+    },
 
     setProject: (project, readOnly = false) => {
       history.clear();
