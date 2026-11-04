@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Terminal,
   AlertTriangle,
@@ -14,8 +14,13 @@ import {
 import { useEditorStore } from '../../stores/editorStore';
 
 export const SimulationConsole: React.FC = () => {
+  const [mounted, setMounted] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState<'events' | 'validation' | 'gpio'>('events');
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const events = useEditorStore((s) => s.simulationEvents);
   const validation = useEditorStore((s) => s.validationResult);
@@ -150,8 +155,11 @@ export const SimulationConsole: React.FC = () => {
               ) : (
                 events.map((ev) => (
                   <div key={ev.id} className="flex items-center space-x-2 py-0.5 hover:bg-white/[0.02] text-xs">
-                    <span className="text-[10px] text-gray-500 shrink-0">
-                      {new Date(ev.timestamp).toLocaleTimeString()}
+                    <span
+                      className="text-[10px] text-gray-500 shrink-0 font-mono"
+                      suppressHydrationWarning
+                    >
+                      {mounted ? new Date(ev.timestamp).toLocaleTimeString() : '--:--:--'}
                     </span>
                     {getEventBadge(ev.type)}
                     <span className="text-gray-200 truncate sm:whitespace-normal">{ev.message}</span>

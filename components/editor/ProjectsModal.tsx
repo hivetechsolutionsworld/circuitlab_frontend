@@ -134,7 +134,7 @@ export const ProjectsModal: React.FC = () => {
                     <Cable className="h-3 w-3 text-emerald-400" />
                     <span>{proj.wireCount} wires</span>
                   </span>
-                  <span className="flex items-center space-x-1">
+                  <span className="flex items-center space-x-1" suppressHydrationWarning>
                     <Calendar className="h-3 w-3 text-gray-500" />
                     <span>{new Date(proj.updatedAt).toLocaleDateString()}</span>
                   </span>
