@@ -19,6 +19,8 @@ import {
   Trash2,
   Layers,
   SlidersHorizontal,
+  FilePlus,
+  FolderOpen,
 } from 'lucide-react';
 import { useEditorStore } from '../../stores/editorStore';
 import { WIRE_COLORS } from '@circuitlab/shared';
@@ -32,6 +34,7 @@ export const HeaderToolbar: React.FC = () => {
   const canRedo = useEditorStore((s) => s.canRedo);
   const undo = useEditorStore((s) => s.undo);
   const redo = useEditorStore((s) => s.redo);
+  const newProject = useEditorStore((s) => s.newProject);
 
   const currentTool = useEditorStore((s) => s.currentTool);
   const setCurrentTool = useEditorStore((s) => s.setCurrentTool);
@@ -134,7 +137,7 @@ export const HeaderToolbar: React.FC = () => {
         onChange={handleFileChange}
       />
 
-      {/* Left Group: Sidebar Toggle, Brand & Project Title */}
+      {/* Left Group: Sidebar Toggle, Brand, Project Title, New & Projects buttons */}
       <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
         {/* Component Library Drawer Toggle */}
         <button
@@ -167,9 +170,30 @@ export const HeaderToolbar: React.FC = () => {
           value={project.name}
           onChange={(e) => setProjectName(e.target.value)}
           disabled={isReadOnly}
-          className="bg-transparent px-1.5 py-1 text-xs font-medium text-gray-200 hover:bg-panel-hover focus:bg-panel-hover focus:outline-none focus:ring-1 focus:ring-blue-500 rounded transition-all w-24 sm:w-36 md:w-44 lg:w-56 truncate"
+          className="bg-transparent px-1.5 py-1 text-xs font-medium text-gray-200 hover:bg-panel-hover focus:bg-panel-hover focus:outline-none focus:ring-1 focus:ring-blue-500 rounded transition-all w-24 sm:w-36 md:w-44 lg:w-52 truncate"
           title="Click to rename project"
         />
+
+        {/* New Project Button */}
+        <button
+          onClick={newProject}
+          disabled={isReadOnly}
+          className="flex items-center space-x-1 rounded bg-panel-header px-2 py-1 text-xs text-gray-300 hover:text-white hover:bg-panel-hover border border-panel-border transition"
+          title="Create New Blank Project"
+        >
+          <FilePlus className="h-3.5 w-3.5 text-blue-400" />
+          <span className="hidden md:inline">New</span>
+        </button>
+
+        {/* Open Saved Projects (MongoDB) Button */}
+        <button
+          onClick={() => openModal('projects')}
+          className="flex items-center space-x-1 rounded bg-panel-header px-2 py-1 text-xs text-gray-300 hover:text-white hover:bg-panel-hover border border-panel-border transition"
+          title="Open Saved Projects (MongoDB)"
+        >
+          <FolderOpen className="h-3.5 w-3.5 text-amber-400" />
+          <span className="hidden md:inline">Projects</span>
+        </button>
 
         {isReadOnly && (
           <span className="hidden md:inline-flex rounded bg-yellow-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-yellow-400 border border-yellow-500/30">
@@ -268,7 +292,7 @@ export const HeaderToolbar: React.FC = () => {
           {simulationStatus !== 'running' ? (
             <button
               onClick={startSimulation}
-              className="flex items-center space-x-1 sm:space-x-1.5 rounded bg-emerald-600 px-2 sm:px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-500 shadow-sm transition"
+              className="flex items-center space-x-1 sm:space-x-1.5 rounded bg-emerald-600 px-2.5 sm:px-3 py-1 text-xs font-semibold text-white hover:bg-emerald-500 shadow-sm transition"
               title="Start Circuit Simulation"
             >
               <Play className="h-3.5 w-3.5 fill-current" />
@@ -277,7 +301,7 @@ export const HeaderToolbar: React.FC = () => {
           ) : (
             <button
               onClick={stopSimulation}
-              className="flex items-center space-x-1 sm:space-x-1.5 rounded bg-red-600 px-2 sm:px-3 py-1 text-xs font-semibold text-white hover:bg-red-500 shadow-sm transition"
+              className="flex items-center space-x-1 sm:space-x-1.5 rounded bg-red-600 px-2.5 sm:px-3 py-1 text-xs font-semibold text-white hover:bg-red-500 shadow-sm transition"
               title="Stop Simulation"
             >
               <Square className="h-3.5 w-3.5 fill-current" />

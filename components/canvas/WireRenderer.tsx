@@ -109,6 +109,65 @@ export const SingleWire: React.FC<WireRendererProps> = ({ wire, isSelected }) =>
   );
 };
 
+export const ActiveDraftWire: React.FC = () => {
+  const activeWireDraft = useEditorStore((s) => s.activeWireDraft);
+  const activeWireDraftPoint = useEditorStore((s) => s.activeWireDraftPoint);
+  const components = useEditorStore((s) => s.project.components);
+  const selectedWireColor = useEditorStore((s) => s.selectedWireColor) || '#3b82f6';
+  const bbPins = useMemo(() => generateBreadboardHoles().pins, []);
+
+  const points = useMemo(() => {
+    if (!activeWireDraft || !activeWireDraftPoint) return null;
+
+    const fromComp = components.find((c) => c.id === activeWireDraft.componentId);
+    if (!fromComp) return null;
+
+    let fromPinLocal: [number, number, number] = [0, 0, 0];
+    if (fromComp.type === 'breadboard') {
+      const p = bbPins.find((pin) => pin.id === activeWireDraft.pinId);
+      if (p) fromPinLocal = p.position;
+    } else {
+      const meta = COMPONENT_METADATA[fromComp.type];
+      const p = meta?.pins.find((pin) => pin.id === activeWireDraft.pinId);
+      if (p) fromPinLocal = p.position;
+    }
+
+    const startPos = getPinWorldPosition(fromComp.position, fromComp.rotation, fromPinLocal);
+    const vStart = new THREE.Vector3(...startPos);
+    const vEnd = new THREE.Vector3(...activeWireDraftPoint);
+
+    const dist = vStart.distanceTo(vEnd);
+    const midY = Math.max(vStart.y, vEnd.y) + Math.min(1.2, 0.3 + dist * 0.12);
+    const vControl = new THREE.Vector3(
+      (vStart.x + vEnd.x) / 2,
+      midY,
+      (vStart.z + vEnd.z) / 2
+    );
+
+    const curve = new THREE.QuadraticBezierCurve3(vStart, vControl, vEnd);
+    return curve.getPoints(20);
+  }, [activeWireDraft, activeWireDraftPoint, components, bbPins]);
+
+  const tubeGeometry = useMemo(() => {
+    if (!points || points.length < 2) return null;
+    const curve = new THREE.CatmullRomCurve3(points);
+    return new THREE.TubeGeometry(curve, 20, 0.035, 8, false);
+  }, [points]);
+
+  if (!tubeGeometry) return null;
+
+  return (
+    <mesh geometry={tubeGeometry}>
+      <meshStandardMaterial
+        color={selectedWireColor}
+        emissive={selectedWireColor}
+        emissiveIntensity={0.6}
+        roughness={0.2}
+      />
+    </mesh>
+  );
+};
+
 export const WireRenderer: React.FC = () => {
   const wires = useEditorStore((s) => s.project.wires);
   const selectedWireId = useEditorStore((s) => s.selectedWireId);
@@ -122,6 +181,7 @@ export const WireRenderer: React.FC = () => {
           isSelected={selectedWireId === wire.id}
         />
       ))}
+      <ActiveDraftWire />
     </group>
   );
 };

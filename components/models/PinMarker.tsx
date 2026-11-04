@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Html } from '@react-three/drei';
 import { useEditorStore } from '../../stores/editorStore';
 import { PinDefinition } from '@circuitlab/shared';
+import { getPinWorldPosition } from '../../lib/coords';
 
 interface PinMarkerProps {
   componentId: string;
@@ -16,6 +17,8 @@ export const PinMarker: React.FC<PinMarkerProps> = ({ componentId, pin, position
   const activeWireDraft = useEditorStore((s) => s.activeWireDraft);
   const startWireDraft = useEditorStore((s) => s.startWireDraft);
   const completeWireDraft = useEditorStore((s) => s.completeWireDraft);
+  const setActiveWireDraftPoint = useEditorStore((s) => s.setActiveWireDraftPoint);
+  const components = useEditorStore((s) => s.project.components);
 
   const isSelectedForWire =
     activeWireDraft?.componentId === componentId && activeWireDraft?.pinId === pin.id;
@@ -24,9 +27,31 @@ export const PinMarker: React.FC<PinMarkerProps> = ({ componentId, pin, position
     e.stopPropagation();
     if (!activeWireDraft) {
       startWireDraft(componentId, pin.id);
+      const comp = components.find((c) => c.id === componentId);
+      if (comp) {
+        const worldPos = getPinWorldPosition(comp.position, comp.rotation, position);
+        setActiveWireDraftPoint([worldPos[0], worldPos[1] + 0.1, worldPos[2]]);
+      }
     } else {
       completeWireDraft(componentId, pin.id);
+      setActiveWireDraftPoint(null);
     }
+  };
+
+  const handlePointerOver = (e: any) => {
+    e.stopPropagation();
+    setHovered(true);
+    if (activeWireDraft) {
+      const comp = components.find((c) => c.id === componentId);
+      if (comp) {
+        const worldPos = getPinWorldPosition(comp.position, comp.rotation, position);
+        setActiveWireDraftPoint(worldPos);
+      }
+    }
+  };
+
+  const handlePointerOut = () => {
+    setHovered(false);
   };
 
   const getPinColor = () => {
@@ -43,33 +68,27 @@ export const PinMarker: React.FC<PinMarkerProps> = ({ componentId, pin, position
       {/* Visual terminal pin */}
       <mesh
         onClick={handleClick}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          setHovered(true);
-        }}
-        onPointerOut={() => setHovered(false)}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
       >
-        <cylinderGeometry args={[0.04, 0.04, 0.15, 8]} />
+        <cylinderGeometry args={[0.045, 0.045, 0.16, 8]} />
         <meshStandardMaterial
           color={getPinColor()}
           metalness={0.8}
           roughness={0.2}
           emissive={isSelectedForWire || hovered ? getPinColor() : '#000000'}
-          emissiveIntensity={isSelectedForWire ? 0.8 : hovered ? 0.4 : 0}
+          emissiveIntensity={isSelectedForWire ? 0.9 : hovered ? 0.5 : 0}
         />
       </mesh>
 
       {/* Larger invisible hit sphere for effortless clicking */}
       <mesh
         onClick={handleClick}
-        onPointerOver={(e) => {
-          e.stopPropagation();
-          setHovered(true);
-        }}
-        onPointerOut={() => setHovered(false)}
+        onPointerOver={handlePointerOver}
+        onPointerOut={handlePointerOut}
         visible={false}
       >
-        <sphereGeometry args={[0.12, 8, 8]} />
+        <sphereGeometry args={[0.14, 8, 8]} />
       </mesh>
 
       {/* Tooltip on hover */}

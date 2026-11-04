@@ -9,6 +9,7 @@ import { SimulationConsole } from './SimulationConsole';
 import { ShareModal } from './ShareModal';
 import { SettingsModal } from './SettingsModal';
 import { HelpModal } from './HelpModal';
+import { ProjectsModal } from './ProjectsModal';
 import { ToastContainer } from './Toast';
 import { useKeybindings } from '../../hooks/useKeybindings';
 import { useEditorStore } from '../../stores/editorStore';
@@ -86,6 +87,7 @@ export const EditorLayout: React.FC = () => {
       <ShareModal />
       <SettingsModal />
       <HelpModal />
+      <ProjectsModal />
       <ToastContainer />
     </div>
   );

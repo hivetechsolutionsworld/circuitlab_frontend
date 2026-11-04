@@ -12,6 +12,7 @@ import {
   validateCircuit,
   CircuitGraph,
   CURRENT_SCHEMA_VERSION,
+  SAMPLE_ESP32_PROJECT,
 } from '@circuitlab/shared';
 import { HistoryManager } from './historyStore';
 
@@ -46,16 +47,24 @@ interface EditorState {
   validationResult: CircuitValidationResult | null;
 
   // Modals & UI
-  activeModal: 'share' | 'settings' | 'help' | null;
+  activeModal: 'share' | 'settings' | 'help' | 'projects' | null;
   toasts: ToastItem[];
   isSidebarOpen: boolean;
   isPropertiesOpen: boolean;
+  isDraggingComponent: boolean;
+  activeWireDraftPoint: [number, number, number] | null;
+  cameraViewPreset: '3d' | 'top' | 'front';
 
   // Actions
   toggleSidebar: (force?: boolean) => void;
   toggleProperties: (force?: boolean) => void;
   setSidebarOpen: (open: boolean) => void;
   setPropertiesOpen: (open: boolean) => void;
+  setIsDraggingComponent: (isDragging: boolean) => void;
+  setActiveWireDraftPoint: (pt: [number, number, number] | null) => void;
+  setCameraViewPreset: (preset: '3d' | 'top' | 'front') => void;
+  newProject: () => void;
+  loadSampleProject: () => void;
   setProject: (project: CircuitProject, readOnly?: boolean) => void;
   setProjectName: (name: string) => void;
   addComponent: (type: ComponentType, position?: [number, number, number]) => void;
@@ -84,35 +93,29 @@ interface EditorState {
   undo: () => void;
   redo: () => void;
 
-  openModal: (modal: 'share' | 'settings' | 'help' | null) => void;
+  openModal: (modal: 'share' | 'settings' | 'help' | 'projects' | null) => void;
   addToast: (toast: Omit<ToastItem, 'id'>) => void;
   removeToast: (id: string) => void;
 }
 
-const defaultInitialProject: CircuitProject = {
-  id: 'proj_default',
-  name: 'Untitled Circuit',
-  description: 'Interactive 3D circuit simulation',
-  version: 1,
-  schemaVersion: CURRENT_SCHEMA_VERSION,
-  components: [],
-  wires: [],
-  camera: { position: [0, 8, 12], target: [0, 0, 0] },
-  editorSettings: {
-    gridSnap: true,
-    gridSize: 0.5,
-    defaultWireColor: '#3b82f6',
-    theme: 'dark',
-    showLabels: true,
-    autoValidate: true,
-  },
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString(),
-};
+const defaultInitialProject: CircuitProject = JSON.parse(
+  JSON.stringify(SAMPLE_ESP32_PROJECT)
+);
 
 export const useEditorStore = create<EditorState>((set, get) => {
   const history = new HistoryManager(50);
-  const initialEngine = new SimulationEngine([], []);
+  const initialEngine = new SimulationEngine(
+    defaultInitialProject.components,
+    defaultInitialProject.wires
+  );
+
+  initialEngine.setOnStateChange((states, events) => {
+    set({
+      componentSimStates: states,
+      simulationEvents: events,
+      simulationStatus: initialEngine.getStatus(),
+    });
+  });
 
   return {
     project: defaultInitialProject,
@@ -130,14 +133,17 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
     simulationEngine: initialEngine,
     simulationStatus: 'stopped',
-    componentSimStates: {},
-    simulationEvents: [],
+    componentSimStates: initialEngine.getComponentStates(),
+    simulationEvents: initialEngine.getEvents(),
     validationResult: null,
 
     activeModal: null,
     toasts: [],
     isSidebarOpen: false,
     isPropertiesOpen: false,
+    isDraggingComponent: false,
+    activeWireDraftPoint: null,
+    cameraViewPreset: '3d',
 
     setProject: (project, readOnly = false) => {
       history.clear();
@@ -574,6 +580,50 @@ export const useEditorStore = create<EditorState>((set, get) => {
     setSidebarOpen: (open) => set({ isSidebarOpen: open }),
 
     setPropertiesOpen: (open) => set({ isPropertiesOpen: open }),
+
+    setIsDraggingComponent: (isDragging) => set({ isDraggingComponent: isDragging }),
+
+    setActiveWireDraftPoint: (pt) => set({ activeWireDraftPoint: pt }),
+
+    setCameraViewPreset: (preset) => set({ cameraViewPreset: preset }),
+
+    newProject: () => {
+      const emptyProject: CircuitProject = {
+        id: `proj_${Date.now().toString(36)}`,
+        name: 'New Circuit Project',
+        description: 'Custom electronic circuit',
+        version: 1,
+        schemaVersion: CURRENT_SCHEMA_VERSION,
+        components: [],
+        wires: [],
+        camera: { position: [0, 10, 14], target: [0, 0, 0] },
+        editorSettings: {
+          gridSnap: true,
+          gridSize: 0.5,
+          defaultWireColor: '#3b82f6',
+          theme: 'dark',
+          showLabels: true,
+          autoValidate: true,
+        },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      get().setProject(emptyProject);
+      get().addToast({
+        type: 'info',
+        title: 'New Project Created',
+        message: 'Empty workspace ready. Place components from the left sidebar.',
+      });
+    },
+
+    loadSampleProject: () => {
+      get().setProject(JSON.parse(JSON.stringify(SAMPLE_ESP32_PROJECT)));
+      get().addToast({
+        type: 'success',
+        title: 'ESP32 Smart Home Loaded',
+        message: 'Demonstration circuit ready to simulate.',
+      });
+    },
 
     openModal: (modal) => set({ activeModal: modal }),
 

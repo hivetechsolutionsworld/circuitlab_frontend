@@ -11,6 +11,7 @@ import { BreadboardModel } from '../models/BreadboardModel';
 import { WireRenderer } from './WireRenderer';
 import { GridPlane } from './GridPlane';
 import { CameraController } from './CameraController';
+import { DraggableComponent } from './DraggableComponent';
 
 export const Scene: React.FC = () => {
   const components = useEditorStore((s) => s.project.components);
@@ -22,43 +23,57 @@ export const Scene: React.FC = () => {
       <CameraController />
 
       {/* Lighting Setup */}
-      <ambientLight intensity={0.8} />
+      <ambientLight intensity={0.9} />
       <directionalLight
         position={[10, 20, 10]}
-        intensity={1.2}
+        intensity={1.3}
         castShadow
         shadow-mapSize-width={2048}
         shadow-mapSize-height={2048}
       />
-      <directionalLight position={[-10, 10, -10]} intensity={0.4} />
+      <directionalLight position={[-10, 12, -10]} intensity={0.5} />
+      <directionalLight position={[0, -10, 0]} intensity={0.2} />
 
       {/* Grid Floor */}
       <GridPlane />
 
-      {/* 3D Component Models */}
+      {/* 3D Component Models with Interactive Dragging */}
       <group>
         {components.map((comp) => {
           const isSelected = selectedComponentId === comp.id;
+          let modelNode = null;
           switch (comp.type) {
             case 'esp32':
-              return <ESP32Model key={comp.id} component={comp} isSelected={isSelected} />;
+              modelNode = <ESP32Model component={comp} isSelected={isSelected} />;
+              break;
             case 'led':
-              return <LEDModel key={comp.id} component={comp} isSelected={isSelected} />;
+              modelNode = <LEDModel component={comp} isSelected={isSelected} />;
+              break;
             case 'resistor':
-              return <ResistorModel key={comp.id} component={comp} isSelected={isSelected} />;
+              modelNode = <ResistorModel component={comp} isSelected={isSelected} />;
+              break;
             case 'push_button':
-              return <PushButtonModel key={comp.id} component={comp} isSelected={isSelected} />;
+              modelNode = <PushButtonModel component={comp} isSelected={isSelected} />;
+              break;
             case 'dht22':
-              return <DHT22Model key={comp.id} component={comp} isSelected={isSelected} />;
+              modelNode = <DHT22Model component={comp} isSelected={isSelected} />;
+              break;
             case 'breadboard':
-              return <BreadboardModel key={comp.id} component={comp} isSelected={isSelected} />;
+              modelNode = <BreadboardModel component={comp} isSelected={isSelected} />;
+              break;
             default:
-              return null;
+              modelNode = null;
           }
+
+          return (
+            <DraggableComponent key={comp.id} component={comp}>
+              {modelNode}
+            </DraggableComponent>
+          );
         })}
       </group>
 
-      {/* Wires */}
+      {/* Active and Existing Wires */}
       <WireRenderer />
     </>
   );

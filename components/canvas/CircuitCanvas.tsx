@@ -3,6 +3,7 @@
 import React from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Scene } from './Scene';
+import { ViewportControls } from './ViewportControls';
 import { useEditorStore } from '../../stores/editorStore';
 
 export const CircuitCanvas: React.FC = () => {
@@ -10,6 +11,7 @@ export const CircuitCanvas: React.FC = () => {
 
   return (
     <div className="relative h-full w-full select-none bg-background">
+      {/* 3D WebGL Canvas */}
       <Canvas
         shadows
         camera={{
@@ -24,6 +26,9 @@ export const CircuitCanvas: React.FC = () => {
         <color attach="background" args={['#0a0c10']} />
         <Scene />
       </Canvas>
+
+      {/* Floating Viewport and Camera Controls Overlay */}
+      <ViewportControls />
     </div>
   );
 };

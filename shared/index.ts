@@ -6,6 +6,7 @@ export * from './types/api';
 
 export * from './constants/components';
 export * from './constants/colors';
+export * from './constants/sample-project';
 
 export * from './breadboard/breadboard-matrix';
 export * from './breadboard/connectivity';

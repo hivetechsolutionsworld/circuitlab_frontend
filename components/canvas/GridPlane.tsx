@@ -2,21 +2,30 @@
 
 import React from 'react';
 import { useEditorStore } from '../../stores/editorStore';
-import { snapToGrid } from '../../lib/coords';
 
 export const GridPlane: React.FC = () => {
   const selectComponent = useEditorStore((s) => s.selectComponent);
   const selectWire = useEditorStore((s) => s.selectWire);
   const cancelWireDraft = useEditorStore((s) => s.cancelWireDraft);
   const activeWireDraft = useEditorStore((s) => s.activeWireDraft);
+  const setActiveWireDraftPoint = useEditorStore((s) => s.setActiveWireDraftPoint);
 
   const handlePointerDown = (e: any) => {
+    e.stopPropagation();
     // If user clicked the empty grid
     if (activeWireDraft) {
       cancelWireDraft();
+      setActiveWireDraftPoint(null);
     }
     selectComponent(null);
     selectWire(null);
+  };
+
+  const handlePointerMove = (e: any) => {
+    if (activeWireDraft) {
+      e.stopPropagation();
+      setActiveWireDraftPoint([e.point.x, e.point.y + 0.1, e.point.z]);
+    }
   };
 
   return (
@@ -29,6 +38,7 @@ export const GridPlane: React.FC = () => {
         rotation={[-Math.PI / 2, 0, 0]}
         position={[0, -0.02, 0]}
         onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
         receiveShadow
       >
         <planeGeometry args={[100, 100]} />
