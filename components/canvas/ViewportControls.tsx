@@ -49,9 +49,9 @@ export const ViewportControls: React.FC = () => {
 
   return (
     <>
-      {/* Cirkit Designer style Floating Simulation Alert Pill (Top-Left of Canvas) */}
+      {/* Cirkit Designer style Floating Simulation Alert Pill (Top-Left of Canvas, hidden on small mobile) */}
       {showAlertBanner && (
-        <div className="absolute top-3 left-3 z-10 flex items-center space-x-2 rounded-lg bg-[#181c28]/95 backdrop-blur-md px-3 py-1.5 text-xs text-gray-200 border border-emerald-500/30 shadow-lg select-none">
+        <div className="absolute top-3 left-3 z-10 hidden sm:flex items-center space-x-2 rounded-lg bg-[#181c28]/95 backdrop-blur-md px-3 py-1.5 text-xs text-gray-200 border border-emerald-500/30 shadow-lg select-none">
           <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
           <span className="font-medium text-[11px]">
             <span className="font-bold text-emerald-400">{project.components.length}/{project.components.length} parts</span> in this circuit are fully simulatable
@@ -69,14 +69,14 @@ export const ViewportControls: React.FC = () => {
 
       {/* Active Wire Drafting Prompt Banner */}
       {activeWireDraft && (
-        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-2 rounded-full bg-blue-600 px-4 py-1.5 text-xs text-white shadow-2xl border border-blue-400/60 ring-2 ring-blue-500/30 select-none pointer-events-auto whitespace-nowrap animate-pulse">
-          <Cable className="h-4 w-4 text-cyan-300" />
-          <span className="font-semibold">
-            Connecting Wire from <span className="underline font-bold text-amber-200">{activeWireDraft.pinId}</span>: Click target pin or component to connect
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-2 rounded-full bg-blue-600 px-3.5 sm:px-4 py-1.5 text-xs text-white shadow-2xl border border-blue-400/60 ring-2 ring-blue-500/30 select-none pointer-events-auto max-w-[94vw] animate-pulse">
+          <Cable className="h-4 w-4 text-cyan-300 shrink-0" />
+          <span className="font-semibold truncate">
+            Connecting Wire from <span className="underline font-bold text-amber-200">{activeWireDraft.pinId}</span>: Click target pin or component
           </span>
           <button
             onClick={handleCancelWire}
-            className="ml-2 rounded-full bg-black/40 p-1 hover:bg-black/70 transition"
+            className="ml-2 rounded-full bg-black/40 p-1 hover:bg-black/70 transition shrink-0"
             title="Cancel Wire (Esc)"
           >
             <X className="h-3.5 w-3.5" />
@@ -85,7 +85,7 @@ export const ViewportControls: React.FC = () => {
       )}
 
       {/* Top-Right Floating Viewport Camera HUD Controls & Zoom */}
-      <div className="absolute top-3 right-3 z-10 flex items-center space-x-1.5 rounded-lg bg-[#181c28]/90 backdrop-blur-md p-1 border border-panel-border shadow-xl select-none pointer-events-auto">
+      <div className="absolute top-3 right-3 z-10 flex items-center space-x-1 sm:space-x-1.5 rounded-lg bg-[#181c28]/90 backdrop-blur-md p-1 border border-panel-border shadow-xl select-none pointer-events-auto">
         <button
           onClick={() => setCameraViewPreset('3d')}
           className={`flex items-center space-x-1 rounded px-2.5 py-1 text-xs font-medium transition ${
