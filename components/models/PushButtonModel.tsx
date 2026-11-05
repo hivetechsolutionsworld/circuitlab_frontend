@@ -20,12 +20,19 @@ export const PushButtonModel: React.FC<PushButtonModelProps> = ({ component, isS
 
   const handleBodyClick = (e: any) => {
     e.stopPropagation();
-    if (useEditorStore.getState().activeWireDraft) return;
+    if (useEditorStore.getState().activeWireDraft) {
+      useEditorStore.getState().completeWireDraftToComponent(component.id, [e.point.x, e.point.y, e.point.z]);
+      return;
+    }
     selectComponent(component.id);
   };
 
   const handlePlungerClick = (e: any) => {
     e.stopPropagation();
+    if (useEditorStore.getState().activeWireDraft) {
+      useEditorStore.getState().completeWireDraftToComponent(component.id, [e.point.x, e.point.y, e.point.z]);
+      return;
+    }
     // Toggle momentary press
     setButtonState(component.id, !isPressed);
   };

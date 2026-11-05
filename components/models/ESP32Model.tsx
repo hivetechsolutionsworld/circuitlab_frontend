@@ -16,7 +16,10 @@ export const ESP32Model: React.FC<ESP32ModelProps> = ({ component, isSelected })
 
   const handleClick = (e: any) => {
     e.stopPropagation();
-    if (useEditorStore.getState().activeWireDraft) return;
+    if (useEditorStore.getState().activeWireDraft) {
+      useEditorStore.getState().completeWireDraftToComponent(component.id, [e.point.x, e.point.y, e.point.z]);
+      return;
+    }
     selectComponent(component.id);
   };
 

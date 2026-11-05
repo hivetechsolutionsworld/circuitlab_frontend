@@ -36,7 +36,17 @@ export const BreadboardModel: React.FC<BreadboardModelProps> = ({ component, isS
       )}
 
       {/* Main Breadboard ABS Plastic Base */}
-      <mesh position={[0, 0, 0]} receiveShadow castShadow>
+      <mesh
+        position={[0, 0, 0]}
+        receiveShadow
+        castShadow
+        onPointerMove={(e) => {
+          if (useEditorStore.getState().activeWireDraft) {
+            e.stopPropagation();
+            useEditorStore.getState().setActiveWireDraftPoint([e.point.x, e.point.y + 0.05, e.point.z]);
+          }
+        }}
+      >
         <boxGeometry args={[4.8, 0.2, 7.8]} />
         <meshStandardMaterial color="#f1f5f9" roughness={0.3} metalness={0.05} />
       </mesh>

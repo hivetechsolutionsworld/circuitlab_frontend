@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import * as THREE from 'three';
 import {
   CircuitProject,
   PlacedComponent,
@@ -15,6 +16,7 @@ import {
   SAMPLE_ESP32_PROJECT,
 } from '@circuitlab/shared';
 import { HistoryManager } from './historyStore';
+import { getPinWorldPosition } from '../lib/coords';
 
 export interface ToastItem {
   id: string;
@@ -78,6 +80,7 @@ interface EditorState {
 
   startWireDraft: (componentId: string, pinId: string) => void;
   completeWireDraft: (componentId: string, pinId: string) => void;
+  completeWireDraftToComponent: (componentId: string, hitPoint?: [number, number, number]) => void;
   cancelWireDraft: () => void;
   selectWire: (id: string | null) => void;
   deleteWire: (id: string) => void;
@@ -410,6 +413,33 @@ export const useEditorStore = create<EditorState>((set, get) => {
         title: 'Wire Connected',
         message: `Connected ${from.pinId} to ${to.pinId}`,
       });
+    },
+
+    completeWireDraftToComponent: (componentId, hitPoint) => {
+      const state = get();
+      if (state.isReadOnly || !state.activeWireDraft) return;
+
+      const comp = state.project.components.find((c) => c.id === componentId);
+      if (!comp || comp.type === 'breadboard') return;
+
+      const meta = COMPONENT_METADATA[comp.type];
+      if (!meta || !meta.pins || meta.pins.length === 0) return;
+
+      let chosenPin = meta.pins[0];
+      if (hitPoint) {
+        let minDist = Infinity;
+        const hitVec = new THREE.Vector3(...hitPoint);
+        for (const p of meta.pins) {
+          const worldPos = getPinWorldPosition(comp.position, comp.rotation, p.position);
+          const d = hitVec.distanceTo(new THREE.Vector3(...worldPos));
+          if (d < minDist) {
+            minDist = d;
+            chosenPin = p;
+          }
+        }
+      }
+
+      get().completeWireDraft(componentId, chosenPin.id);
     },
 
     cancelWireDraft: () => {

@@ -137,7 +137,11 @@ export const ActiveDraftWire: React.FC = () => {
     const vEnd = new THREE.Vector3(...activeWireDraftPoint);
 
     const dist = vStart.distanceTo(vEnd);
-    const midY = Math.max(vStart.y, vEnd.y) + Math.min(1.2, 0.3 + dist * 0.12);
+    if (dist < 0.05) {
+      vEnd.y += 0.08;
+    }
+
+    const midY = Math.max(vStart.y, vEnd.y) + Math.min(1.2, 0.25 + dist * 0.12);
     const vControl = new THREE.Vector3(
       (vStart.x + vEnd.x) / 2,
       midY,
@@ -151,20 +155,35 @@ export const ActiveDraftWire: React.FC = () => {
   const tubeGeometry = useMemo(() => {
     if (!points || points.length < 2) return null;
     const curve = new THREE.CatmullRomCurve3(points);
-    return new THREE.TubeGeometry(curve, 20, 0.035, 8, false);
+    return new THREE.TubeGeometry(curve, 20, 0.038, 8, false);
   }, [points]);
 
-  if (!tubeGeometry) return null;
-
   return (
-    <mesh geometry={tubeGeometry}>
-      <meshStandardMaterial
-        color={selectedWireColor}
-        emissive={selectedWireColor}
-        emissiveIntensity={0.6}
-        roughness={0.2}
-      />
-    </mesh>
+    <group>
+      {tubeGeometry && (
+        <mesh geometry={tubeGeometry}>
+          <meshStandardMaterial
+            color={selectedWireColor}
+            emissive={selectedWireColor}
+            emissiveIntensity={0.8}
+            roughness={0.2}
+          />
+        </mesh>
+      )}
+
+      {/* Terminal bead at current cursor/pin position */}
+      {activeWireDraftPoint && (
+        <mesh position={activeWireDraftPoint}>
+          <sphereGeometry args={[0.07, 12, 12]} />
+          <meshStandardMaterial
+            color={selectedWireColor}
+            emissive={selectedWireColor}
+            emissiveIntensity={1.0}
+            roughness={0.2}
+          />
+        </mesh>
+      )}
+    </group>
   );
 };
 

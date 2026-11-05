@@ -47,7 +47,6 @@ export const Scene: React.FC = () => {
         <mesh
           position={[0, 0.15, 0]}
           rotation={[-Math.PI / 2, 0, 0]}
-          visible={false}
           onPointerMove={(e) => {
             e.stopPropagation();
             setActiveWireDraftPoint([e.point.x, e.point.y + 0.05, e.point.z]);
@@ -59,7 +58,8 @@ export const Scene: React.FC = () => {
             setActiveWireDraftPoint(null);
           }}
         >
-          <planeGeometry args={[100, 100]} />
+          <planeGeometry args={[200, 200]} />
+          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
         </mesh>
       )}
 

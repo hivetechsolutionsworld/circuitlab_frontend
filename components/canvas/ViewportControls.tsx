@@ -69,14 +69,14 @@ export const ViewportControls: React.FC = () => {
 
       {/* Active Wire Drafting Prompt Banner */}
       {activeWireDraft && (
-        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center space-x-2 rounded-full bg-blue-600/95 backdrop-blur-md px-4 py-1.5 text-xs text-white shadow-2xl border border-blue-400/50 animate-pulse select-none">
-          <Cable className="h-4 w-4" />
+        <div className="absolute top-12 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-2 rounded-full bg-blue-600 px-4 py-1.5 text-xs text-white shadow-2xl border border-blue-400/60 ring-2 ring-blue-500/30 select-none pointer-events-auto whitespace-nowrap animate-pulse">
+          <Cable className="h-4 w-4 text-cyan-300" />
           <span className="font-semibold">
-            Connecting Wire from <span className="underline">{activeWireDraft.pinId}</span>: Click target pin to finish connection
+            Connecting Wire from <span className="underline font-bold text-amber-200">{activeWireDraft.pinId}</span>: Click target pin or component to connect
           </span>
           <button
             onClick={handleCancelWire}
-            className="ml-2 rounded-full bg-black/30 p-1 hover:bg-black/50 transition"
+            className="ml-2 rounded-full bg-black/40 p-1 hover:bg-black/70 transition"
             title="Cancel Wire (Esc)"
           >
             <X className="h-3.5 w-3.5" />
