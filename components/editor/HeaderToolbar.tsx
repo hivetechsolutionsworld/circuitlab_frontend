@@ -141,7 +141,16 @@ export const HeaderToolbar: React.FC = () => {
   };
 
   return (
-    <header className="flex h-14 w-full items-center justify-between border-b border-panel-border bg-[#10141e] px-2 sm:px-4 select-none z-30 overflow-x-auto scrollbar-none gap-2">
+    <header className="relative z-50 flex h-14 w-full items-center justify-between border-b border-panel-border bg-[#10141e] px-2 sm:px-4 select-none overflow-visible gap-2">
+      {/* Click-outside backdrop to dismiss any active dropdown menu */}
+      {activeMenu && (
+        <div
+          className="fixed inset-0 z-40 bg-black/10 backdrop-blur-[0.5px]"
+          onClick={() => setActiveMenu(null)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Hidden file input for import */}
       <input
         ref={fileInputRef}
@@ -188,56 +197,69 @@ export const HeaderToolbar: React.FC = () => {
             <div className="relative">
               <button
                 onClick={() => setActiveMenu(activeMenu === 'file' ? null : 'file')}
-                className="hover:text-gray-200 transition"
+                className={`px-1.5 py-0.5 rounded transition ${
+                  activeMenu === 'file' ? 'bg-blue-600/20 text-blue-400 font-medium' : 'hover:text-gray-200'
+                }`}
               >
                 File
               </button>
               {activeMenu === 'file' && (
-                <div className="absolute left-0 top-full mt-1 w-48 rounded-md border border-panel-border bg-[#18181b] p-1 shadow-2xl z-50 text-xs">
+                <div className="absolute left-0 top-full mt-1.5 w-56 rounded-lg border border-panel-border bg-[#181c28] p-1.5 shadow-2xl z-50 text-xs ring-1 ring-black/50">
                   <button
                     onClick={() => {
                       newProject();
                       setActiveMenu(null);
                     }}
-                    className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200"
+                    className="flex w-full items-center justify-between rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 transition"
                   >
-                    <FilePlus className="h-3.5 w-3.5 text-blue-400" />
-                    <span>New Project</span>
+                    <div className="flex items-center space-x-2">
+                      <FilePlus className="h-3.5 w-3.5 text-blue-400" />
+                      <span>New Project</span>
+                    </div>
                   </button>
                   <button
                     onClick={() => {
                       openModal('projects');
                       setActiveMenu(null);
                     }}
-                    className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200"
+                    className="flex w-full items-center justify-between rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 transition"
                   >
-                    <FolderOpen className="h-3.5 w-3.5 text-amber-400" />
-                    <span>Open Projects (MongoDB)...</span>
+                    <div className="flex items-center space-x-2">
+                      <FolderOpen className="h-3.5 w-3.5 text-amber-400" />
+                      <span>Open Projects (MongoDB)...</span>
+                    </div>
                   </button>
                   <button
                     onClick={() => {
                       handleSave();
                       setActiveMenu(null);
                     }}
-                    className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200"
+                    className="flex w-full items-center justify-between rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 transition"
                   >
-                    <Save className="h-3.5 w-3.5 text-emerald-400" />
-                    <span>Save Project (Ctrl+S)</span>
+                    <div className="flex items-center space-x-2">
+                      <Save className="h-3.5 w-3.5 text-emerald-400" />
+                      <span>Save Project</span>
+                    </div>
+                    <kbd className="text-[10px] text-gray-500 font-mono">Ctrl+S</kbd>
                   </button>
-                  <div className="my-1 border-t border-panel-border" />
+                  <div className="my-1 border-t border-panel-border/60" />
                   <button
                     onClick={handleExport}
-                    className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200"
+                    className="flex w-full items-center justify-between rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 transition"
                   >
-                    <Download className="h-3.5 w-3.5 text-cyan-400" />
-                    <span>Export JSON</span>
+                    <div className="flex items-center space-x-2">
+                      <Download className="h-3.5 w-3.5 text-cyan-400" />
+                      <span>Export JSON</span>
+                    </div>
                   </button>
                   <button
                     onClick={handleImportClick}
-                    className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200"
+                    className="flex w-full items-center justify-between rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 transition"
                   >
-                    <Upload className="h-3.5 w-3.5 text-purple-400" />
-                    <span>Import JSON...</span>
+                    <div className="flex items-center space-x-2">
+                      <Upload className="h-3.5 w-3.5 text-purple-400" />
+                      <span>Import JSON...</span>
+                    </div>
                   </button>
                 </div>
               )}
@@ -247,22 +269,27 @@ export const HeaderToolbar: React.FC = () => {
             <div className="relative">
               <button
                 onClick={() => setActiveMenu(activeMenu === 'edit' ? null : 'edit')}
-                className="hover:text-gray-200 transition"
+                className={`px-1.5 py-0.5 rounded transition ${
+                  activeMenu === 'edit' ? 'bg-blue-600/20 text-blue-400 font-medium' : 'hover:text-gray-200'
+                }`}
               >
                 Edit
               </button>
               {activeMenu === 'edit' && (
-                <div className="absolute left-0 top-full mt-1 w-44 rounded-md border border-panel-border bg-[#18181b] p-1 shadow-2xl z-50 text-xs">
+                <div className="absolute left-0 top-full mt-1.5 w-48 rounded-lg border border-panel-border bg-[#181c28] p-1.5 shadow-2xl z-50 text-xs ring-1 ring-black/50">
                   <button
                     onClick={() => {
                       undo();
                       setActiveMenu(null);
                     }}
                     disabled={!canUndo}
-                    className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 disabled:opacity-40"
+                    className="flex w-full items-center justify-between rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 disabled:opacity-40 transition"
                   >
-                    <Undo2 className="h-3.5 w-3.5 text-blue-400" />
-                    <span>Undo (Ctrl+Z)</span>
+                    <div className="flex items-center space-x-2">
+                      <Undo2 className="h-3.5 w-3.5 text-blue-400" />
+                      <span>Undo</span>
+                    </div>
+                    <kbd className="text-[10px] text-gray-500 font-mono">Ctrl+Z</kbd>
                   </button>
                   <button
                     onClick={() => {
@@ -270,10 +297,13 @@ export const HeaderToolbar: React.FC = () => {
                       setActiveMenu(null);
                     }}
                     disabled={!canRedo}
-                    className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 disabled:opacity-40"
+                    className="flex w-full items-center justify-between rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 disabled:opacity-40 transition"
                   >
-                    <Redo2 className="h-3.5 w-3.5 text-blue-400" />
-                    <span>Redo (Ctrl+Y)</span>
+                    <div className="flex items-center space-x-2">
+                      <Redo2 className="h-3.5 w-3.5 text-blue-400" />
+                      <span>Redo</span>
+                    </div>
+                    <kbd className="text-[10px] text-gray-500 font-mono">Ctrl+Y</kbd>
                   </button>
                 </div>
               )}
@@ -283,31 +313,47 @@ export const HeaderToolbar: React.FC = () => {
             <div className="relative">
               <button
                 onClick={() => setActiveMenu(activeMenu === 'help' ? null : 'help')}
-                className="hover:text-gray-200 transition"
+                className={`px-1.5 py-0.5 rounded transition ${
+                  activeMenu === 'help' ? 'bg-blue-600/20 text-blue-400 font-medium' : 'hover:text-gray-200'
+                }`}
               >
                 Help
               </button>
               {activeMenu === 'help' && (
-                <div className="absolute left-0 top-full mt-1 w-52 rounded-md border border-panel-border bg-[#18181b] p-1 shadow-2xl z-50 text-xs">
+                <div className="absolute left-0 top-full mt-1.5 w-56 rounded-lg border border-panel-border bg-[#181c28] p-1.5 shadow-2xl z-50 text-xs ring-1 ring-black/50">
                   <button
                     onClick={() => {
                       openModal('help');
                       setActiveMenu(null);
                     }}
-                    className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200"
+                    className="flex w-full items-center justify-between rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 transition"
                   >
-                    <HelpCircle className="h-3.5 w-3.5 text-blue-400" />
-                    <span>Keyboard Shortcuts</span>
+                    <div className="flex items-center space-x-2">
+                      <HelpCircle className="h-3.5 w-3.5 text-blue-400" />
+                      <span>Keyboard Shortcuts</span>
+                    </div>
+                    <kbd className="text-[10px] text-gray-500 font-mono">?</kbd>
                   </button>
                   <button
                     onClick={() => {
                       loadSampleProject();
                       setActiveMenu(null);
                     }}
-                    className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200"
+                    className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 transition"
                   >
                     <Cpu className="h-3.5 w-3.5 text-emerald-400" />
                     <span>Load ESP32 Demo</span>
+                  </button>
+                  <div className="my-1 border-t border-panel-border/60" />
+                  <button
+                    onClick={() => {
+                      openModal('settings');
+                      setActiveMenu(null);
+                    }}
+                    className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 transition"
+                  >
+                    <Settings className="h-3.5 w-3.5 text-gray-400" />
+                    <span>About CircuitLab 3D</span>
                   </button>
                 </div>
               )}
@@ -464,16 +510,20 @@ export const HeaderToolbar: React.FC = () => {
         <div className="relative">
           <button
             onClick={() => setActiveMenu(activeMenu === 'export' ? null : 'export')}
-            className="flex items-center space-x-1 rounded bg-[#181c28] border border-panel-border px-2.5 py-1.5 text-xs font-medium text-gray-300 hover:bg-panel-hover transition"
+            className={`flex items-center space-x-1 rounded border px-2.5 py-1.5 text-xs font-medium transition ${
+              activeMenu === 'export'
+                ? 'bg-blue-600/20 text-blue-400 border-blue-500/40'
+                : 'bg-[#181c28] border-panel-border text-gray-300 hover:bg-panel-hover'
+            }`}
           >
             <span>Export</span>
             <ChevronDown className="h-3 w-3 text-gray-400" />
           </button>
           {activeMenu === 'export' && (
-            <div className="absolute right-0 top-full mt-1 w-44 rounded-md border border-panel-border bg-[#18181b] p-1 shadow-2xl z-50 text-xs">
+            <div className="absolute right-0 top-full mt-1.5 w-52 rounded-lg border border-panel-border bg-[#181c28] p-1.5 shadow-2xl z-50 text-xs ring-1 ring-black/50">
               <button
                 onClick={handleExport}
-                className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200"
+                className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 transition"
               >
                 <Download className="h-3.5 w-3.5 text-blue-400" />
                 <span>Export JSON</span>
@@ -483,7 +533,7 @@ export const HeaderToolbar: React.FC = () => {
                   setEditorMode('build');
                   setActiveMenu(null);
                 }}
-                className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200"
+                className="flex w-full items-center space-x-2 rounded px-2.5 py-1.5 hover:bg-panel-hover text-gray-200 transition"
               >
                 <Package className="h-3.5 w-3.5 text-emerald-400" />
                 <span>Bill of Materials (BOM)</span>
