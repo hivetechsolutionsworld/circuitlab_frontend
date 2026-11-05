@@ -63,6 +63,9 @@ export const SimulationConsole: React.FC = () => {
 
   useEffect(() => {
     setMounted(true);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setIsExpanded(false);
+    }
   }, []);
 
   // When simulation starts/stops or events change, stream into serial lines
@@ -184,8 +187,8 @@ export const SimulationConsole: React.FC = () => {
 
   return (
     <footer
-      className={`border-t border-panel-border bg-[#10131d] z-20 flex flex-col transition-all duration-200 select-none ${
-        isExpanded ? 'h-48 sm:h-56' : 'h-8'
+      className={`border-t border-panel-border bg-[#10131d] z-20 flex flex-col transition-all duration-200 select-none shrink-0 ${
+        isExpanded ? 'h-40 sm:h-56' : 'h-8'
       }`}
     >
       {/* Console Header Bar (Styled exactly like Cirkit Designer IDE) */}

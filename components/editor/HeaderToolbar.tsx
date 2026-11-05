@@ -144,7 +144,7 @@ export const HeaderToolbar: React.FC = () => {
   };
 
   return (
-    <header className="relative z-50 flex h-14 w-full items-center justify-between border-b border-panel-border bg-[#10141e] px-2 sm:px-4 select-none overflow-visible gap-2">
+    <header className="relative z-50 flex h-14 w-full items-center justify-between border-b border-panel-border bg-[#10141e] px-2 sm:px-4 select-none overflow-visible gap-2 shrink-0">
       {/* Click-outside backdrop to dismiss any active dropdown menu */}
       {activeMenu && (
         <div

@@ -47,7 +47,7 @@ export const EditorLayout: React.FC = () => {
   }, [setSidebarOpen, setPropertiesOpen]);
 
   return (
-    <div className="flex h-screen w-screen flex-col overflow-hidden bg-background text-foreground antialiased select-none">
+    <div className="fixed inset-0 flex h-[100dvh] w-screen flex-col overflow-hidden bg-background text-foreground antialiased select-none pt-[env(safe-area-inset-top,0px)] pb-[env(safe-area-inset-bottom,0px)]">
       {/* Top Header Toolbar */}
       <HeaderToolbar />
 
