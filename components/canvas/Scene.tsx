@@ -1,6 +1,8 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
+import * as THREE from 'three';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useEditorStore } from '../../stores/editorStore';
 import { ESP32Model } from '../models/ESP32Model';
 import { LEDModel } from '../models/LEDModel';
@@ -15,12 +17,30 @@ import { GridPlane } from './GridPlane';
 import { CameraController } from './CameraController';
 import { DraggableComponent } from './DraggableComponent';
 
+/**
+ * Mathematically tracks cursor position in world space on the component plane
+ * WITHOUT rendering any 3D meshes that would intercept or block pin clicks!
+ */
+const ActiveWirePointerTracker: React.FC = () => {
+  const activeWireDraft = useEditorStore((s) => s.activeWireDraft);
+  const setActiveWireDraftPoint = useEditorStore((s) => s.setActiveWireDraftPoint);
+  const { raycaster } = useThree();
+  const plane = useMemo(() => new THREE.Plane(new THREE.Vector3(0, 1, 0), -0.2), []);
+  const intersectPoint = useMemo(() => new THREE.Vector3(), []);
+
+  useFrame(() => {
+    if (!activeWireDraft) return;
+    if (raycaster.ray.intersectPlane(plane, intersectPoint)) {
+      setActiveWireDraftPoint([intersectPoint.x, intersectPoint.y + 0.05, intersectPoint.z]);
+    }
+  });
+
+  return null;
+};
+
 export const Scene: React.FC = () => {
   const components = useEditorStore((s) => s.project.components);
   const selectedComponentId = useEditorStore((s) => s.selectedComponentId);
-  const activeWireDraft = useEditorStore((s) => s.activeWireDraft);
-  const setActiveWireDraftPoint = useEditorStore((s) => s.setActiveWireDraftPoint);
-  const cancelWireDraft = useEditorStore((s) => s.cancelWireDraft);
 
   return (
     <>
@@ -42,26 +62,8 @@ export const Scene: React.FC = () => {
       {/* Grid Floor */}
       <GridPlane />
 
-      {/* Active wire draft plane to continuously update rubber-band wire position across the scene */}
-      {activeWireDraft && (
-        <mesh
-          position={[0, 0.15, 0]}
-          rotation={[-Math.PI / 2, 0, 0]}
-          onPointerMove={(e) => {
-            e.stopPropagation();
-            setActiveWireDraftPoint([e.point.x, e.point.y + 0.05, e.point.z]);
-          }}
-          onPointerDown={(e) => {
-            // Clicking empty canvas space cancels wire draft
-            e.stopPropagation();
-            cancelWireDraft();
-            setActiveWireDraftPoint(null);
-          }}
-        >
-          <planeGeometry args={[200, 200]} />
-          <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-        </mesh>
-      )}
+      {/* Cursor tracking for live wire spline (pure math, no blocking mesh) */}
+      <ActiveWirePointerTracker />
 
       {/* 3D Component Models with Interactive Dragging */}
       <group>

@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useMemo } from 'react';
+import * as THREE from 'three';
 import { PlacedComponent, generateBreadboardHoles } from '@circuitlab/shared';
 import { useEditorStore } from '../../stores/editorStore';
+import { getPinWorldPosition } from '../../lib/coords';
 import { PinMarker } from './PinMarker';
 
 interface BreadboardModelProps {
@@ -17,7 +19,29 @@ export const BreadboardModel: React.FC<BreadboardModelProps> = ({ component, isS
 
   const handleClick = (e: any) => {
     e.stopPropagation();
-    if (useEditorStore.getState().activeWireDraft) return;
+    const activeDraft = useEditorStore.getState().activeWireDraft;
+    if (activeDraft) {
+      // Intelligently connect to the breadboard hole nearest to the click point
+      if (e.point) {
+        const clickVec = new THREE.Vector3(e.point.x, e.point.y, e.point.z);
+        let closestPin = pins[0];
+        let minDistance = Infinity;
+
+        for (const pin of pins) {
+          const pinWorld = getPinWorldPosition(component.position, component.rotation, pin.position);
+          const dist = clickVec.distanceTo(new THREE.Vector3(...pinWorld));
+          if (dist < minDistance) {
+            minDistance = dist;
+            closestPin = pin;
+          }
+        }
+
+        if (closestPin) {
+          useEditorStore.getState().completeWireDraft(component.id, closestPin.id);
+        }
+      }
+      return;
+    }
     selectComponent(component.id);
   };
 

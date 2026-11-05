@@ -119,10 +119,10 @@ export const PinMarker: React.FC<PinMarkerProps> = ({ componentId, pin, position
         }}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
-        visible={false}
         renderOrder={100}
       >
         <sphereGeometry args={[0.13, 8, 8]} />
+        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
       </mesh>
 
       {/* Tooltip on hover */}
