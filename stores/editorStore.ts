@@ -81,7 +81,9 @@ interface EditorState {
   startWireDraft: (componentId: string, pinId: string) => void;
   completeWireDraft: (componentId: string, pinId: string) => void;
   completeWireDraftToComponent: (componentId: string, hitPoint?: [number, number, number]) => void;
+  startWireDraftFromComponent: (componentId: string, hitPoint?: [number, number, number]) => void;
   cancelWireDraft: () => void;
+  lastWireActionAt: number;
   selectWire: (id: string | null) => void;
   deleteWire: (id: string) => void;
   setWireColor: (color: string) => void;
@@ -148,6 +150,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     isPropertiesOpen: false,
     isDraggingComponent: false,
     activeWireDraftPoint: null,
+    lastWireActionAt: 0,
     cameraViewPreset: '3d',
     editorMode: 'design',
 
@@ -365,6 +368,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
         currentTool: 'wire',
         selectedComponentId: null,
         selectedWireId: null,
+        lastWireActionAt: Date.now(),
       });
     },
 
@@ -377,7 +381,11 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
       // Prevent connecting pin to itself
       if (from.componentId === to.componentId && from.pinId === to.pinId) {
-        set({ activeWireDraft: null, currentTool: 'select' });
+        set({
+          activeWireDraft: null,
+          currentTool: 'select',
+          lastWireActionAt: Date.now(),
+        });
         return;
       }
 
@@ -403,6 +411,9 @@ export const useEditorStore = create<EditorState>((set, get) => {
         activeWireDraft: null,
         currentTool: 'select',
         selectedWireId: wireId,
+        selectedComponentId: null,
+        activeWireDraftPoint: null,
+        lastWireActionAt: Date.now(),
         canUndo: state.history.canUndo(),
         canRedo: state.history.canRedo(),
       });
@@ -442,8 +453,42 @@ export const useEditorStore = create<EditorState>((set, get) => {
       get().completeWireDraft(componentId, chosenPin.id);
     },
 
+    startWireDraftFromComponent: (componentId, hitPoint) => {
+      const state = get();
+      if (state.isReadOnly) return;
+
+      const comp = state.project.components.find((c) => c.id === componentId);
+      if (!comp || comp.type === 'breadboard') return;
+
+      const meta = COMPONENT_METADATA[comp.type];
+      if (!meta || !meta.pins || meta.pins.length === 0) return;
+
+      let chosenPin = meta.pins[0];
+      if (hitPoint) {
+        let minDist = Infinity;
+        const hitVec = new THREE.Vector3(...hitPoint);
+        for (const p of meta.pins) {
+          const worldPos = getPinWorldPosition(comp.position, comp.rotation, p.position);
+          const d = hitVec.distanceTo(new THREE.Vector3(...worldPos));
+          if (d < minDist) {
+            minDist = d;
+            chosenPin = p;
+          }
+        }
+      }
+
+      state.startWireDraft(componentId, chosenPin.id);
+      const chosenWorldPos = getPinWorldPosition(comp.position, comp.rotation, chosenPin.position);
+      state.setActiveWireDraftPoint([chosenWorldPos[0], chosenWorldPos[1] + 0.15, chosenWorldPos[2]]);
+    },
+
     cancelWireDraft: () => {
-      set({ activeWireDraft: null, currentTool: 'select' });
+      set({
+        activeWireDraft: null,
+        currentTool: 'select',
+        activeWireDraftPoint: null,
+        lastWireActionAt: Date.now(),
+      });
     },
 
     selectWire: (id) => {

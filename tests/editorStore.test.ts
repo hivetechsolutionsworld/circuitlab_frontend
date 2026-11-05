@@ -61,6 +61,42 @@ describe('Editor Store State & Actions', () => {
     expect(wires[0].to).toEqual({ componentId: ledId, pinId: 'anode' });
   });
 
+  it('completes wire connection by targeting component body coordinate', () => {
+    const store = useEditorStore.getState();
+    store.newProject();
+    store.addComponent('esp32', [-3, 0, 0]);
+    store.addComponent('led', [3, 0, 0]);
+
+    const comps = useEditorStore.getState().project.components;
+    const espId = comps[0].id;
+    const ledId = comps[1].id;
+
+    store.startWireDraft(espId, 'gpio4');
+    // Hit point near anode (x = 3 - 0.15 = 2.85)
+    store.completeWireDraftToComponent(ledId, [2.85, 0, 0]);
+
+    const wires = useEditorStore.getState().project.wires;
+    expect(wires).toHaveLength(1);
+    expect(wires[0].from).toEqual({ componentId: espId, pinId: 'gpio4' });
+    expect(wires[0].to).toEqual({ componentId: ledId, pinId: 'anode' });
+    expect(useEditorStore.getState().activeWireDraft).toBeNull();
+  });
+
+  it('starts wire draft from nearest component pin when wire tool is used', () => {
+    const store = useEditorStore.getState();
+    store.newProject();
+    store.addComponent('led', [0, 0, 0]);
+    const ledId = useEditorStore.getState().project.components[0].id;
+
+    // Start wire draft from component body near cathode (+0.15)
+    store.startWireDraftFromComponent(ledId, [0.15, 0, 0]);
+    expect(useEditorStore.getState().activeWireDraft).toEqual({
+      componentId: ledId,
+      pinId: 'cathode',
+    });
+    expect(useEditorStore.getState().currentTool).toBe('wire');
+  });
+
   it('deleting a component safely removes all connected wires', () => {
     const store = useEditorStore.getState();
     store.addComponent('esp32');

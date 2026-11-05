@@ -33,8 +33,13 @@ export const DraggableComponent: React.FC<DraggableComponentProps> = ({ componen
   const isSelected = selectedComponentId === component.id;
 
   const handlePointerDown = (e: any) => {
-    // Only drag in select tool mode, when not read-only, and NOT currently drafting a wire
-    if (isReadOnly || activeWireDraft) return;
+    if (isReadOnly) return;
+
+    // CRITICAL: Stop propagation so floor GridPlane doesn't intercept or cancel the wire draft!
+    if (activeWireDraft || currentTool === 'wire') {
+      e.stopPropagation();
+      return;
+    }
 
     if (currentTool === 'delete') {
       e.stopPropagation();
@@ -42,7 +47,10 @@ export const DraggableComponent: React.FC<DraggableComponentProps> = ({ componen
       return;
     }
 
-    if (currentTool !== 'select') return;
+    if (currentTool !== 'select') {
+      e.stopPropagation();
+      return;
+    }
 
     e.stopPropagation();
     selectComponent(component.id);

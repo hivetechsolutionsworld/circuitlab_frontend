@@ -20,8 +20,15 @@ export const PushButtonModel: React.FC<PushButtonModelProps> = ({ component, isS
 
   const handleBodyClick = (e: any) => {
     e.stopPropagation();
-    if (useEditorStore.getState().activeWireDraft) {
-      useEditorStore.getState().completeWireDraftToComponent(component.id, [e.point.x, e.point.y, e.point.z]);
+    const state = useEditorStore.getState();
+    if (Date.now() - state.lastWireActionAt < 400) return;
+
+    if (state.activeWireDraft) {
+      state.completeWireDraftToComponent(component.id, [e.point.x, e.point.y, e.point.z]);
+      return;
+    }
+    if (state.currentTool === 'wire') {
+      state.startWireDraftFromComponent(component.id, [e.point.x, e.point.y, e.point.z]);
       return;
     }
     selectComponent(component.id);
@@ -29,8 +36,15 @@ export const PushButtonModel: React.FC<PushButtonModelProps> = ({ component, isS
 
   const handlePlungerClick = (e: any) => {
     e.stopPropagation();
-    if (useEditorStore.getState().activeWireDraft) {
-      useEditorStore.getState().completeWireDraftToComponent(component.id, [e.point.x, e.point.y, e.point.z]);
+    const state = useEditorStore.getState();
+    if (Date.now() - state.lastWireActionAt < 400) return;
+
+    if (state.activeWireDraft) {
+      state.completeWireDraftToComponent(component.id, [e.point.x, e.point.y, e.point.z]);
+      return;
+    }
+    if (state.currentTool === 'wire') {
+      state.startWireDraftFromComponent(component.id, [e.point.x, e.point.y, e.point.z]);
       return;
     }
     // Toggle momentary press
@@ -42,10 +56,15 @@ export const PushButtonModel: React.FC<PushButtonModelProps> = ({ component, isS
       position={component.position}
       rotation={component.rotation}
       onClick={handleBodyClick}
+      onPointerDown={(e) => {
+        if (useEditorStore.getState().activeWireDraft || useEditorStore.getState().currentTool === 'wire') {
+          e.stopPropagation();
+        }
+      }}
     >
       {/* Selection Ring */}
       {isSelected && (
-        <mesh position={[0, -0.2, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh position={[0, -0.2, 0]} rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
           <ringGeometry args={[0.65, 0.75, 24]} />
           <meshBasicMaterial color="#3b82f6" transparent opacity={0.6} />
         </mesh>

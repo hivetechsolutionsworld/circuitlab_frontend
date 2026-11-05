@@ -159,9 +159,9 @@ export const ActiveDraftWire: React.FC = () => {
   }, [points]);
 
   return (
-    <group>
+    <group raycast={() => null}>
       {tubeGeometry && (
-        <mesh geometry={tubeGeometry}>
+        <mesh geometry={tubeGeometry} raycast={() => null}>
           <meshStandardMaterial
             color={selectedWireColor}
             emissive={selectedWireColor}
@@ -173,7 +173,7 @@ export const ActiveDraftWire: React.FC = () => {
 
       {/* Terminal bead at current cursor/pin position */}
       {activeWireDraftPoint && (
-        <mesh position={activeWireDraftPoint}>
+        <mesh position={activeWireDraftPoint} raycast={() => null}>
           <sphereGeometry args={[0.07, 12, 12]} />
           <meshStandardMaterial
             color={selectedWireColor}

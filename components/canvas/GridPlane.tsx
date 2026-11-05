@@ -12,6 +12,9 @@ export const GridPlane: React.FC = () => {
 
   const handlePointerDown = (e: any) => {
     e.stopPropagation();
+    if (Date.now() - useEditorStore.getState().lastWireActionAt < 400) {
+      return;
+    }
     // If user clicked the empty grid
     if (activeWireDraft) {
       cancelWireDraft();

@@ -19,7 +19,10 @@ export const BreadboardModel: React.FC<BreadboardModelProps> = ({ component, isS
 
   const handleClick = (e: any) => {
     e.stopPropagation();
-    const activeDraft = useEditorStore.getState().activeWireDraft;
+    const state = useEditorStore.getState();
+    if (Date.now() - state.lastWireActionAt < 400) return;
+
+    const activeDraft = state.activeWireDraft;
     if (activeDraft) {
       // Intelligently connect to the breadboard hole nearest to the click point
       if (e.point) {
@@ -37,11 +40,36 @@ export const BreadboardModel: React.FC<BreadboardModelProps> = ({ component, isS
         }
 
         if (closestPin) {
-          useEditorStore.getState().completeWireDraft(component.id, closestPin.id);
+          state.completeWireDraft(component.id, closestPin.id);
         }
       }
       return;
     }
+
+    if (state.currentTool === 'wire') {
+      if (e.point) {
+        const clickVec = new THREE.Vector3(e.point.x, e.point.y, e.point.z);
+        let closestPin = pins[0];
+        let minDistance = Infinity;
+
+        for (const pin of pins) {
+          const pinWorld = getPinWorldPosition(component.position, component.rotation, pin.position);
+          const dist = clickVec.distanceTo(new THREE.Vector3(...pinWorld));
+          if (dist < minDistance) {
+            minDistance = dist;
+            closestPin = pin;
+          }
+        }
+
+        if (closestPin) {
+          state.startWireDraft(component.id, closestPin.id);
+          const worldPos = getPinWorldPosition(component.position, component.rotation, closestPin.position);
+          state.setActiveWireDraftPoint([worldPos[0], worldPos[1] + 0.15, worldPos[2]]);
+        }
+      }
+      return;
+    }
+
     selectComponent(component.id);
   };
 
@@ -50,10 +78,15 @@ export const BreadboardModel: React.FC<BreadboardModelProps> = ({ component, isS
       position={component.position}
       rotation={component.rotation}
       onClick={handleClick}
+      onPointerDown={(e) => {
+        if (useEditorStore.getState().activeWireDraft || useEditorStore.getState().currentTool === 'wire') {
+          e.stopPropagation();
+        }
+      }}
     >
       {/* Selection Highlight */}
       {isSelected && (
-        <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
           <planeGeometry args={[5.2, 8.4]} />
           <meshBasicMaterial color="#3b82f6" transparent opacity={0.2} />
         </mesh>
@@ -64,6 +97,11 @@ export const BreadboardModel: React.FC<BreadboardModelProps> = ({ component, isS
         position={[0, 0, 0]}
         receiveShadow
         castShadow
+        onPointerDown={(e) => {
+          if (useEditorStore.getState().activeWireDraft || useEditorStore.getState().currentTool === 'wire') {
+            e.stopPropagation();
+          }
+        }}
         onPointerMove={(e) => {
           if (useEditorStore.getState().activeWireDraft) {
             e.stopPropagation();

@@ -14,6 +14,7 @@ interface PinMarkerProps {
 
 export const PinMarker: React.FC<PinMarkerProps> = ({ componentId, pin, position }) => {
   const [hovered, setHovered] = useState(false);
+  const lastActionTime = React.useRef(0);
   const activeWireDraft = useEditorStore((s) => s.activeWireDraft);
   const startWireDraft = useEditorStore((s) => s.startWireDraft);
   const completeWireDraft = useEditorStore((s) => s.completeWireDraft);
@@ -30,8 +31,13 @@ export const PinMarker: React.FC<PinMarkerProps> = ({ componentId, pin, position
 
   const handlePinAction = (e: any) => {
     e.stopPropagation();
+    const now = Date.now();
+    if (now - lastActionTime.current < 350) return;
+    lastActionTime.current = now;
+
     const state = useEditorStore.getState();
     if (state.isReadOnly) return;
+    if (now - state.lastWireActionAt < 350) return;
 
     if (!state.activeWireDraft) {
       // Start wiring from this pin

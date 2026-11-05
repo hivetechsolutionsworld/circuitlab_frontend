@@ -19,8 +19,15 @@ export const PowerSupplyModel: React.FC<PowerSupplyModelProps> = ({ component, i
 
   const handleClick = (e: any) => {
     e.stopPropagation();
-    if (useEditorStore.getState().activeWireDraft) {
-      useEditorStore.getState().completeWireDraftToComponent(component.id, [e.point.x, e.point.y, e.point.z]);
+    const state = useEditorStore.getState();
+    if (Date.now() - state.lastWireActionAt < 400) return;
+
+    if (state.activeWireDraft) {
+      state.completeWireDraftToComponent(component.id, [e.point.x, e.point.y, e.point.z]);
+      return;
+    }
+    if (state.currentTool === 'wire') {
+      state.startWireDraftFromComponent(component.id, [e.point.x, e.point.y, e.point.z]);
       return;
     }
     selectComponent(component.id);
@@ -31,10 +38,15 @@ export const PowerSupplyModel: React.FC<PowerSupplyModelProps> = ({ component, i
       position={component.position}
       rotation={component.rotation}
       onClick={handleClick}
+      onPointerDown={(e) => {
+        if (useEditorStore.getState().activeWireDraft || useEditorStore.getState().currentTool === 'wire') {
+          e.stopPropagation();
+        }
+      }}
     >
       {/* Selection Ring */}
       {isSelected && (
-        <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <mesh position={[0, -0.05, 0]} rotation={[-Math.PI / 2, 0, 0]} raycast={() => null}>
           <ringGeometry args={[1.8, 2.0, 32]} />
           <meshBasicMaterial color="#3b82f6" transparent opacity={0.6} />
         </mesh>
