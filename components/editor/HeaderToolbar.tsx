@@ -451,40 +451,65 @@ export const HeaderToolbar: React.FC = () => {
           </button>
         </div>
 
-        {/* Canvas Tools (Select / Wire / Delete) */}
-        <div className="hidden lg:flex items-center rounded-lg bg-[#181c28] p-0.5 border border-panel-border">
+        {/* Canvas Tools (Select / Wire / Delete / Color) */}
+        <div className="flex items-center rounded-lg bg-[#181c28] p-0.5 border border-panel-border">
           <button
             onClick={() => setCurrentTool('select')}
             className={`rounded px-2.5 py-1 text-xs font-medium flex items-center space-x-1 transition ${
-              currentTool === 'select' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-400 hover:text-white'
+              currentTool === 'select' ? 'bg-blue-600 text-white shadow-xs font-semibold' : 'text-gray-400 hover:text-white'
             }`}
             title="Select & Move Tool (V)"
           >
             <MousePointer className="h-3.5 w-3.5" />
-            <span>Select</span>
+            <span className="hidden sm:inline">Select</span>
           </button>
 
           <button
             onClick={() => setCurrentTool('wire')}
             className={`rounded px-2.5 py-1 text-xs font-medium flex items-center space-x-1 transition ${
-              currentTool === 'wire' ? 'bg-blue-600 text-white shadow-xs' : 'text-gray-400 hover:text-white'
+              currentTool === 'wire' ? 'bg-blue-600 text-white shadow-xs font-semibold' : 'text-gray-400 hover:text-white'
             }`}
-            title="Wire Tool (W)"
+            title="Wire Tool (W) - Click any pin to connect"
           >
-            <Cable className="h-3.5 w-3.5" />
-            <span>Wire</span>
+            <Cable className="h-3.5 w-3.5 text-cyan-400" />
+            <span className="hidden sm:inline">Wire</span>
+            <div
+              className="h-2.5 w-2.5 rounded-full border border-white/50 ml-0.5 shrink-0"
+              style={{ backgroundColor: selectedWireColor }}
+              title={`Active Wire Color: ${selectedWireColor}`}
+            />
           </button>
 
           <button
             onClick={() => setCurrentTool('delete')}
             className={`rounded px-2.5 py-1 text-xs font-medium flex items-center space-x-1 transition ${
-              currentTool === 'delete' ? 'bg-red-600 text-white shadow-xs' : 'text-gray-400 hover:text-white'
+              currentTool === 'delete' ? 'bg-red-600 text-white shadow-xs font-semibold' : 'text-gray-400 hover:text-white'
             }`}
             title="Delete Tool (D)"
           >
             <Trash2 className="h-3.5 w-3.5" />
-            <span>Delete</span>
+            <span className="hidden sm:inline">Delete</span>
           </button>
+
+          {/* Quick Wire Color Swatches */}
+          <div className="hidden md:flex items-center px-1.5 space-x-1 border-l border-panel-border/70 ml-0.5">
+            {WIRE_COLORS.slice(0, 5).map((wc: any) => (
+              <button
+                key={wc.hex}
+                onClick={() => {
+                  setWireColor(wc.hex);
+                  setCurrentTool('wire');
+                }}
+                className={`h-3.5 w-3.5 rounded-full transition transform hover:scale-125 ${
+                  selectedWireColor === wc.hex
+                    ? 'ring-2 ring-white ring-offset-1 ring-offset-black scale-110'
+                    : 'opacity-70 hover:opacity-100'
+                }`}
+                style={{ backgroundColor: wc.hex }}
+                title={`Select ${wc.name} Wire`}
+              />
+            ))}
+          </div>
         </div>
       </div>
 

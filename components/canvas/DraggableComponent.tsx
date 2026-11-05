@@ -16,6 +16,7 @@ export const DraggableComponent: React.FC<DraggableComponentProps> = ({ componen
   const selectComponent = useEditorStore((s) => s.selectComponent);
   const selectedComponentId = useEditorStore((s) => s.selectedComponentId);
   const currentTool = useEditorStore((s) => s.currentTool);
+  const activeWireDraft = useEditorStore((s) => s.activeWireDraft);
   const deleteComponent = useEditorStore((s) => s.deleteComponent);
   const isReadOnly = useEditorStore((s) => s.isReadOnly);
   const updateComponentPosition = useEditorStore((s) => s.updateComponentPosition);
@@ -32,8 +33,8 @@ export const DraggableComponent: React.FC<DraggableComponentProps> = ({ componen
   const isSelected = selectedComponentId === component.id;
 
   const handlePointerDown = (e: any) => {
-    // Only drag in select tool mode and when not read-only
-    if (isReadOnly) return;
+    // Only drag in select tool mode, when not read-only, and NOT currently drafting a wire
+    if (isReadOnly || activeWireDraft) return;
 
     if (currentTool === 'delete') {
       e.stopPropagation();

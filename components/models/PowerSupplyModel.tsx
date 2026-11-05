@@ -19,6 +19,7 @@ export const PowerSupplyModel: React.FC<PowerSupplyModelProps> = ({ component, i
 
   const handleClick = (e: any) => {
     e.stopPropagation();
+    if (useEditorStore.getState().activeWireDraft) return;
     selectComponent(component.id);
   };
 

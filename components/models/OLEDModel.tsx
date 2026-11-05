@@ -20,6 +20,7 @@ export const OLEDModel: React.FC<OLEDModelProps> = ({ component, isSelected }) =
 
   const handleClick = (e: any) => {
     e.stopPropagation();
+    if (useEditorStore.getState().activeWireDraft) return;
     selectComponent(component.id);
   };
 

@@ -20,6 +20,7 @@ export const PushButtonModel: React.FC<PushButtonModelProps> = ({ component, isS
 
   const handleBodyClick = (e: any) => {
     e.stopPropagation();
+    if (useEditorStore.getState().activeWireDraft) return;
     selectComponent(component.id);
   };
 

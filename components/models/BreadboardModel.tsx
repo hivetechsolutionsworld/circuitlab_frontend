@@ -17,6 +17,7 @@ export const BreadboardModel: React.FC<BreadboardModelProps> = ({ component, isS
 
   const handleClick = (e: any) => {
     e.stopPropagation();
+    if (useEditorStore.getState().activeWireDraft) return;
     selectComponent(component.id);
   };
 

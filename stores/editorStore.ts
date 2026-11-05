@@ -359,6 +359,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
       set({
         activeWireDraft: { componentId, pinId },
+        currentTool: 'wire',
         selectedComponentId: null,
         selectedWireId: null,
       });
@@ -373,7 +374,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
       // Prevent connecting pin to itself
       if (from.componentId === to.componentId && from.pinId === to.pinId) {
-        set({ activeWireDraft: null });
+        set({ activeWireDraft: null, currentTool: 'select' });
         return;
       }
 
@@ -397,17 +398,22 @@ export const useEditorStore = create<EditorState>((set, get) => {
       set({
         project: { ...state.project, wires: updatedWires },
         activeWireDraft: null,
+        currentTool: 'select',
         selectedWireId: wireId,
         canUndo: state.history.canUndo(),
         canRedo: state.history.canRedo(),
       });
 
       get().runValidation();
-      get().addToast({ type: 'success', title: 'Wire Connected' });
+      get().addToast({
+        type: 'success',
+        title: 'Wire Connected',
+        message: `Connected ${from.pinId} to ${to.pinId}`,
+      });
     },
 
     cancelWireDraft: () => {
-      set({ activeWireDraft: null });
+      set({ activeWireDraft: null, currentTool: 'select' });
     },
 
     selectWire: (id) => {

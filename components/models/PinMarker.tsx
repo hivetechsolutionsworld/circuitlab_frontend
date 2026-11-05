@@ -23,16 +23,26 @@ export const PinMarker: React.FC<PinMarkerProps> = ({ componentId, pin, position
   const isSelectedForWire =
     activeWireDraft?.componentId === componentId && activeWireDraft?.pinId === pin.id;
 
-  const handleClick = (e: any) => {
+  const handlePointerDown = (e: any) => {
+    // CRITICAL: Stop propagation to prevent DraggableComponent and OrbitControls from intercepting!
     e.stopPropagation();
-    if (!activeWireDraft) {
+  };
+
+  const handlePinAction = (e: any) => {
+    e.stopPropagation();
+    const state = useEditorStore.getState();
+    if (state.isReadOnly) return;
+
+    if (!state.activeWireDraft) {
+      // Start wiring from this pin
       startWireDraft(componentId, pin.id);
       const comp = components.find((c) => c.id === componentId);
       if (comp) {
         const worldPos = getPinWorldPosition(comp.position, comp.rotation, position);
-        setActiveWireDraftPoint([worldPos[0], worldPos[1] + 0.1, worldPos[2]]);
+        setActiveWireDraftPoint([worldPos[0], worldPos[1] + 0.15, worldPos[2]]);
       }
     } else {
+      // Complete wiring to this pin
       completeWireDraft(componentId, pin.id);
       setActiveWireDraftPoint(null);
     }
@@ -45,7 +55,7 @@ export const PinMarker: React.FC<PinMarkerProps> = ({ componentId, pin, position
       const comp = components.find((c) => c.id === componentId);
       if (comp) {
         const worldPos = getPinWorldPosition(comp.position, comp.rotation, position);
-        setActiveWireDraftPoint(worldPos);
+        setActiveWireDraftPoint([worldPos[0], worldPos[1] + 0.1, worldPos[2]]);
       }
     }
   };
@@ -55,48 +65,75 @@ export const PinMarker: React.FC<PinMarkerProps> = ({ componentId, pin, position
   };
 
   const getPinColor = () => {
-    if (isSelectedForWire) return '#f59e0b'; // Amber pulsing
-    if (hovered) return '#60a5fa'; // Bright blue
-    if (pin.type === 'power') return '#ef4444'; // Red
-    if (pin.type === 'ground') return '#374151'; // Dark
-    if (pin.type === 'gpio') return '#10b981'; // Green
-    return '#9ca3af'; // Silver
+    if (isSelectedForWire) return '#f59e0b'; // Amber pulsing for wire source
+    if (hovered) return '#38bdf8'; // Bright cyan on hover
+    if (pin.type === 'power') return '#ef4444'; // Red for VCC
+    if (pin.type === 'ground') return '#374151'; // Dark for GND
+    if (pin.type === 'gpio') return '#10b981'; // Green for GPIO
+    return '#94a3b8'; // Silver
   };
 
   return (
     <group position={position}>
       {/* Visual terminal pin */}
       <mesh
-        onClick={handleClick}
+        position={[0, 0.02, 0]}
+        onPointerDown={handlePointerDown}
+        onClick={handlePinAction}
+        onPointerUp={(e) => {
+          e.stopPropagation();
+          if (
+            activeWireDraft &&
+            (activeWireDraft.componentId !== componentId || activeWireDraft.pinId !== pin.id)
+          ) {
+            handlePinAction(e);
+          }
+        }}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
+        scale={hovered || isSelectedForWire ? [1.35, 1.35, 1.35] : [1, 1, 1]}
       >
-        <cylinderGeometry args={[0.045, 0.045, 0.16, 8]} />
+        <cylinderGeometry args={[0.048, 0.048, 0.18, 8]} />
         <meshStandardMaterial
           color={getPinColor()}
           metalness={0.8}
           roughness={0.2}
           emissive={isSelectedForWire || hovered ? getPinColor() : '#000000'}
-          emissiveIntensity={isSelectedForWire ? 0.9 : hovered ? 0.5 : 0}
+          emissiveIntensity={isSelectedForWire ? 1.0 : hovered ? 0.7 : 0}
         />
       </mesh>
 
-      {/* Larger invisible hit sphere for effortless clicking */}
+      {/* Raised hit sphere with renderOrder for effortless clicking & priority raycasting */}
       <mesh
-        onClick={handleClick}
+        position={[0, 0.04, 0]}
+        onPointerDown={handlePointerDown}
+        onClick={handlePinAction}
+        onPointerUp={(e) => {
+          e.stopPropagation();
+          if (
+            activeWireDraft &&
+            (activeWireDraft.componentId !== componentId || activeWireDraft.pinId !== pin.id)
+          ) {
+            handlePinAction(e);
+          }
+        }}
         onPointerOver={handlePointerOver}
         onPointerOut={handlePointerOut}
         visible={false}
+        renderOrder={100}
       >
-        <sphereGeometry args={[0.14, 8, 8]} />
+        <sphereGeometry args={[0.13, 8, 8]} />
       </mesh>
 
       {/* Tooltip on hover */}
       {hovered && (
-        <Html distanceFactor={10} position={[0, 0.25, 0]} center pointerEvents="none">
-          <div className="rounded bg-black/90 px-1.5 py-0.5 text-[10px] font-mono text-white shadow-lg border border-gray-700 whitespace-nowrap pointer-events-none z-50">
-            <span className="font-semibold text-blue-400">{pin.name}</span>
-            {pin.description && <span className="text-gray-400 ml-1">({pin.description})</span>}
+        <Html distanceFactor={10} position={[0, 0.28, 0]} center pointerEvents="none">
+          <div className="rounded-md bg-black/95 px-2 py-1 text-[11px] font-mono text-white shadow-2xl border border-blue-500/50 whitespace-nowrap pointer-events-none z-50">
+            <span className="font-bold text-cyan-400">{pin.name}</span>
+            {pin.description && <span className="text-gray-300 ml-1.5">({pin.description})</span>}
+            <div className="text-[9px] text-gray-400">
+              {activeWireDraft ? 'Click to connect wire' : 'Click or drag to start wire'}
+            </div>
           </div>
         </Html>
       )}

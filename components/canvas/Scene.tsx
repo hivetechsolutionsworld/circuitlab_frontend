@@ -18,6 +18,9 @@ import { DraggableComponent } from './DraggableComponent';
 export const Scene: React.FC = () => {
   const components = useEditorStore((s) => s.project.components);
   const selectedComponentId = useEditorStore((s) => s.selectedComponentId);
+  const activeWireDraft = useEditorStore((s) => s.activeWireDraft);
+  const setActiveWireDraftPoint = useEditorStore((s) => s.setActiveWireDraftPoint);
+  const cancelWireDraft = useEditorStore((s) => s.cancelWireDraft);
 
   return (
     <>
@@ -38,6 +41,27 @@ export const Scene: React.FC = () => {
 
       {/* Grid Floor */}
       <GridPlane />
+
+      {/* Active wire draft plane to continuously update rubber-band wire position across the scene */}
+      {activeWireDraft && (
+        <mesh
+          position={[0, 0.15, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+          visible={false}
+          onPointerMove={(e) => {
+            e.stopPropagation();
+            setActiveWireDraftPoint([e.point.x, e.point.y + 0.05, e.point.z]);
+          }}
+          onPointerDown={(e) => {
+            // Clicking empty canvas space cancels wire draft
+            e.stopPropagation();
+            cancelWireDraft();
+            setActiveWireDraftPoint(null);
+          }}
+        >
+          <planeGeometry args={[100, 100]} />
+        </mesh>
+      )}
 
       {/* 3D Component Models with Interactive Dragging */}
       <group>

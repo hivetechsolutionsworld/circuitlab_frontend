@@ -20,6 +20,7 @@ export const ResistorModel: React.FC<ResistorModelProps> = ({ component, isSelec
 
   const handleClick = (e: any) => {
     e.stopPropagation();
+    if (useEditorStore.getState().activeWireDraft) return;
     selectComponent(component.id);
   };
 

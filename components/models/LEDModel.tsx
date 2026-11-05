@@ -29,6 +29,7 @@ export const LEDModel: React.FC<LEDModelProps> = ({ component, isSelected }) => 
 
   const handleClick = (e: any) => {
     e.stopPropagation();
+    if (useEditorStore.getState().activeWireDraft) return;
     selectComponent(component.id);
   };
 

@@ -19,6 +19,7 @@ export const DHT22Model: React.FC<DHT22ModelProps> = ({ component, isSelected })
 
   const handleClick = (e: any) => {
     e.stopPropagation();
+    if (useEditorStore.getState().activeWireDraft) return;
     selectComponent(component.id);
   };
 
