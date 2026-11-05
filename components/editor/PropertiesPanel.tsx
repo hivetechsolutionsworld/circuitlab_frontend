@@ -384,6 +384,52 @@ export const PropertiesPanel: React.FC = () => {
             </div>
           )}
 
+          {selectedComp.type === 'oled' && (
+            <div className="space-y-3 pt-2 border-t border-panel-border">
+              <label className="text-gray-400 font-medium block">OLED Display Properties</label>
+              <div className="rounded bg-black/40 p-2.5 border border-gray-800 space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Resolution:</span>
+                  <span className="font-mono text-gray-200">128 × 64 px</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Interface:</span>
+                  <span className="font-mono text-cyan-400">I2C (0x3C)</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Driver IC:</span>
+                  <span className="font-mono text-gray-200">SSD1306</span>
+                </div>
+                <div className="flex justify-between pt-1 border-t border-gray-800">
+                  <span className="text-gray-400">Screen Status:</span>
+                  <span className={`font-mono font-semibold ${compSim?.active ? 'text-cyan-400' : 'text-gray-500'}`}>
+                    {compSim?.active ? 'DISPLAY ACTIVE' : 'OFFLINE (Needs VCC+GND)'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {selectedComp.type === 'power_supply' && (
+            <div className="space-y-3 pt-2 border-t border-panel-border">
+              <label className="text-gray-400 font-medium block">Power Supply Properties</label>
+              <div className="rounded bg-black/40 p-2.5 border border-gray-800 space-y-1.5 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Dual Rail Voltage:</span>
+                  <span className="font-mono text-emerald-400 font-semibold">+5.0V / +3.3V DC</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Max Current:</span>
+                  <span className="font-mono text-gray-200">700 mA</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Regulator ICs:</span>
+                  <span className="font-mono text-gray-200">AMS1117-5.0 / AMS1117-3.3</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Pin Summary */}
           {meta && meta.pins.length > 0 && (
             <div className="pt-2 border-t border-panel-border">

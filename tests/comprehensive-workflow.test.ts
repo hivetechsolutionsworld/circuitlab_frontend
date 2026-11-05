@@ -246,4 +246,75 @@ describe('Complete CircuitLab Functionality & Workflow Audit', () => {
       expect(useEditorStore.getState().cameraViewPreset).toBe('3d');
     });
   });
+
+  describe('5. Complete Lifecycle: OLED Display, Power Supply & Project Persistence', () => {
+    it('adds OLED and Power Supply components, connects pins, and tests simulation', () => {
+      const store = useEditorStore.getState();
+
+      store.addComponent('power_supply', [-3, 0, 0]);
+      store.addComponent('oled', [3, 0, 0]);
+
+      const state = useEditorStore.getState();
+      expect(state.project.components).toHaveLength(2);
+
+      const ps = state.project.components.find((c) => c.type === 'power_supply')!;
+      const oled = state.project.components.find((c) => c.type === 'oled')!;
+
+      // Wire power supply to OLED VCC and GND
+      store.startWireDraft(ps.id, 'vcc_3v3');
+      store.completeWireDraft(oled.id, 'vcc');
+
+      store.startWireDraft(ps.id, 'gnd1');
+      store.completeWireDraft(oled.id, 'gnd');
+
+      expect(useEditorStore.getState().project.wires).toHaveLength(2);
+
+      // Run simulation engine with OLED and Power Supply
+      const engine = new SimulationEngine(
+        useEditorStore.getState().project.components,
+        useEditorStore.getState().project.wires
+      );
+      engine.start();
+
+      const oledSim = engine.getComponentState(oled.id);
+      expect(oledSim).toBeDefined();
+      expect(oledSim.active).toBe(true);
+    });
+
+    it('simulates full Save, Browser Refresh, and Load restoration workflow', () => {
+      const store = useEditorStore.getState();
+      store.loadSampleProject();
+
+      const originalProject = useEditorStore.getState().project;
+      expect(originalProject.components.length).toBeGreaterThanOrEqual(6);
+      expect(originalProject.wires.length).toBeGreaterThanOrEqual(10);
+
+      // Serialize project (as would be saved to MongoDB or localStorage)
+      const serialized = JSON.stringify(originalProject);
+
+      // Clear workspace / simulate browser refresh or new project
+      store.newProject();
+      expect(useEditorStore.getState().project.components).toHaveLength(0);
+      expect(useEditorStore.getState().project.wires).toHaveLength(0);
+
+      // Re-load / restore saved circuit
+      const parsedProject = JSON.parse(serialized);
+      store.setProject(parsedProject);
+
+      const restoredProject = useEditorStore.getState().project;
+      expect(restoredProject.components).toHaveLength(originalProject.components.length);
+      expect(restoredProject.wires).toHaveLength(originalProject.wires.length);
+      expect(restoredProject.name).toBe(originalProject.name);
+
+      // Verify restored component positions and wire endpoints match exactly
+      const originalEsp = originalProject.components.find((c) => c.type === 'esp32')!;
+      const restoredEsp = restoredProject.components.find((c) => c.type === 'esp32')!;
+      expect(restoredEsp.position).toEqual(originalEsp.position);
+
+      const restoredWire = restoredProject.wires[0];
+      const originalWire = originalProject.wires[0];
+      expect(restoredWire.from).toEqual(originalWire.from);
+      expect(restoredWire.to).toEqual(originalWire.to);
+    });
+  });
 });

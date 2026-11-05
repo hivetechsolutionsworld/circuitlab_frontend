@@ -5,7 +5,20 @@ import {
   ProjectSummary,
 } from '@circuitlab/shared';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+function getApiBase(): string {
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL.replace(/\/+$/, '');
+  }
+  if (typeof window !== 'undefined') {
+    // If running in browser and not on localhost/127.0.0.1, automatically connect to production backend
+    if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+      return 'https://circuitlab-backend.onrender.com';
+    }
+  }
+  return 'http://localhost:4000';
+}
+
+const API_BASE = getApiBase();
 
 export async function fetchProjects(): Promise<{ projects: ProjectSummary[]; total: number }> {
   const res = await fetch(`${API_BASE}/api/projects`);

@@ -8,6 +8,8 @@ import { ResistorModel } from '../models/ResistorModel';
 import { PushButtonModel } from '../models/PushButtonModel';
 import { DHT22Model } from '../models/DHT22Model';
 import { BreadboardModel } from '../models/BreadboardModel';
+import { OLEDModel } from '../models/OLEDModel';
+import { PowerSupplyModel } from '../models/PowerSupplyModel';
 import { WireRenderer } from './WireRenderer';
 import { GridPlane } from './GridPlane';
 import { CameraController } from './CameraController';
@@ -60,6 +62,12 @@ export const Scene: React.FC = () => {
               break;
             case 'breadboard':
               modelNode = <BreadboardModel component={comp} isSelected={isSelected} />;
+              break;
+            case 'oled':
+              modelNode = <OLEDModel component={comp} isSelected={isSelected} />;
+              break;
+            case 'power_supply':
+              modelNode = <PowerSupplyModel component={comp} isSelected={isSelected} />;
               break;
             default:
               modelNode = null;
